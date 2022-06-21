@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/core"
-	executorModel "github.com/vfluxus/workflow/executor/model"
+	"workflow/workflow-utils/model"
+	"workflow/executor/core"
+	executorModel "workflow/executor/model"
 
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"

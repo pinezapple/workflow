@@ -11,10 +11,10 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/repository/entity"
-	"github.com/vfluxus/heimdall/utils"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/heimdall/core"
+	"workflow/heimdall/repository/entity"
+	"workflow/heimdall/utils"
+	"workflow/workflow-utils/model"
 )
 
 type TaskGorm struct {

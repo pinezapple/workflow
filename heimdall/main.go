@@ -2,7 +2,7 @@
 package main
 
 import (
-	"github.com/vfluxus/heimdall/boot"
+	"workflow/heimdall/boot"
 )
 
 // @title 			Heimdall API

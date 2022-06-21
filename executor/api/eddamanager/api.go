@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/vfluxus/dvergr/constant"
-	"github.com/vfluxus/dvergr/httpdto/eddamanagerdto"
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/api"
-	"github.com/vfluxus/workflow/executor/core"
+	"workflow/dvergr/constant"
+	"workflow/dvergr/httpdto/eddamanagerdto"
+	"workflow/workflow-utils/model"
+	"workflow/executor/api"
+	"workflow/executor/core"
 )
 
 const (

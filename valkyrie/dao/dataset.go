@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vfluxus/valkyrie/model"
+	"workflow/valkyrie/model"
 	"gorm.io/gorm"
 )
 

@@ -2,7 +2,7 @@ package forms
 
 import (
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/services/dto"
+	"workflow/heimdall/services/dto"
 )
 
 type UpdateTaskStatusForm struct {

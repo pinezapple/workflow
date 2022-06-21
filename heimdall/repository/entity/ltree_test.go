@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/vfluxus/heimdall/repository/entity"
+	"workflow/heimdall/repository/entity"
 )
 
 func TestAuthPathArrayToLtree(t *testing.T) {

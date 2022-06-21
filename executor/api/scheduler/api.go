@@ -3,10 +3,10 @@ package scheduler
 import (
 	"encoding/json"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/api"
-	"github.com/vfluxus/workflow/executor/core"
-	executorModel "github.com/vfluxus/workflow/executor/model"
+	"workflow/workflow-utils/model"
+	"workflow/executor/api"
+	"workflow/executor/core"
+	executorModel "workflow/executor/model"
 )
 
 const (

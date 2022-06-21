@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/vfluxus/heimdall/services"
+	"workflow/heimdall/services"
 
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
-	"github.com/vfluxus/heimdall/core"
-	_ "github.com/vfluxus/heimdall/docs"
-	"github.com/vfluxus/heimdall/repository"
-	"github.com/vfluxus/heimdall/webserver/middlewares"
-	"github.com/vfluxus/heimdall/webserver/router"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/heimdall/core"
+	_ "workflow/heimdall/docs"
+	"workflow/heimdall/repository"
+	"workflow/heimdall/webserver/middlewares"
+	"workflow/heimdall/webserver/router"
+	"workflow/workflow-utils/model"
 )
 
 var (

@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/core"
+	"workflow/workflow-utils/model"
+	"workflow/executor/core"
 
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"

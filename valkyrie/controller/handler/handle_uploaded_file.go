@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/vfluxus/valkyrie/business"
-	"github.com/vfluxus/valkyrie/controller"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/model"
-	utilsModel "github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/business"
+	"workflow/valkyrie/controller"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/model"
+	utilsModel "workflow/workflow-utils/model"
 )
 
 const FILE_UPLOAD_TYPE = "upload"

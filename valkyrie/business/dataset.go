@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/dao"
-	"github.com/vfluxus/valkyrie/model"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/dao"
+	"workflow/valkyrie/model"
 )
 
 func CreateDataset(ctx context.Context, req *model.CreateNewDatasetReq) (data interface{}, err error) {

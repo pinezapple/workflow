@@ -5,8 +5,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/repository/entity"
-	"github.com/vfluxus/heimdall/repository/gormdb"
+	"workflow/heimdall/repository/entity"
+	"workflow/heimdall/repository/gormdb"
 )
 
 // ------------------------------------------------------------------------------------------------------------------------------------------

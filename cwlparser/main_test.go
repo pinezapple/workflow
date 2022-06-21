@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	argumentCwl  = "/home/thanhpp/go/src/github.com/vfluxus/cwlparser/test/arguments.cwl"
-	applyBSQRCwl = "/home/thanhpp/go/src/github.com/vfluxus/cwlparser/test/ApplyBQSR.cwl"
+	argumentCwl  = "/home/thanhpp/go/src/workflow/cwlparser/test/arguments.cwl"
+	applyBSQRCwl = "/home/thanhpp/go/src/workflow/cwlparser/test/ApplyBQSR.cwl"
 )
 
 func TestCmdLineTool(t *testing.T) {
@@ -53,7 +53,7 @@ func TestCmdLineTool(t *testing.T) {
 }
 
 func TestWorkflowCWL(t *testing.T) {
-	data, err := ioutil.ReadFile("/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/wes/wes.cwl")
+	data, err := ioutil.ReadFile("/home/thanhpp/go/src/workflow/demo-cwl/wes/wes.cwl")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestWorkflowCWL(t *testing.T) {
 
 func TestWorkflowCWLUnmarshal(t *testing.T) {
 	newWorkflowCWL := new(workflowcwl.WorkflowCWL)
-	if err := newWorkflowCWL.Unmarshal("/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/CWL_scatter_example/", "pipeline_step4.cwl"); err != nil {
+	if err := newWorkflowCWL.Unmarshal("/home/thanhpp/go/src/workflow/demo-cwl/CWL_scatter_example/", "pipeline_step4.cwl"); err != nil {
 		t.Fatal(err)
 	}
 	libs.PrintJsonFormat(newWorkflowCWL)
@@ -76,7 +76,7 @@ func TestWorkflowCWLUnmarshal(t *testing.T) {
 
 func TestConvertCWLToDAG(t *testing.T) {
 	newWorkflowCWL := new(workflowcwl.WorkflowCWL)
-	if err := newWorkflowCWL.Unmarshal("/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/bionet-dv/", "bionet.cwl"); err != nil {
+	if err := newWorkflowCWL.Unmarshal("/home/thanhpp/go/src/workflow/demo-cwl/bionet-dv/", "bionet.cwl"); err != nil {
 		t.Fatal(err)
 	}
 	newWorkflowDAG, err := workflowdag.ConvertFromCWL(newWorkflowCWL)
@@ -107,7 +107,7 @@ func writeTmpFile(data interface{}) error {
 
 func TestMainCwlAndDag(t *testing.T) {
 	var (
-		folder  string = "/home/tpp/go/src/github.com/vfluxus/transformer/test/basic/"
+		folder  string = "/home/tpp/go/src/workflow/transformer/test/basic/"
 		cwlfile string = "1st-workflow.cwl"
 	)
 
@@ -126,7 +126,7 @@ func TestMainCwlAndDag(t *testing.T) {
 
 func TestAddValueToStepInAndArg(t *testing.T) {
 	var (
-		folder    = "/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/bionet-dv/"
+		folder    = "/home/thanhpp/go/src/workflow/demo-cwl/bionet-dv/"
 		cwlfile   = "bionet.cwl"
 		inputPath = "bionet.yml"
 		data      = make(map[string]interface{})
@@ -162,7 +162,7 @@ func TestAddValueToStepInAndArg(t *testing.T) {
 
 func TestAddOutputToInput(t *testing.T) {
 	var (
-		folder    = "/home/tpp/go/src/github.com/vfluxus/demo-cwl/wgs/"
+		folder    = "/home/tpp/go/src/workflow/demo-cwl/wgs/"
 		cwlfile   = "mash.cwl"
 		inputPath = "mash.yml"
 		data      = make(map[string]interface{})
@@ -202,7 +202,7 @@ func TestAddOutputToInput(t *testing.T) {
 
 func TestConvertWorkflowDAGToRun(t *testing.T) {
 	var (
-		folder    = "/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/bionet-dv/"
+		folder    = "/home/thanhpp/go/src/workflow/demo-cwl/bionet-dv/"
 		cwlfile   = "bionet.cwl"
 		inputPath = "bionet.yml"
 		userID    = "thanhpp"
@@ -252,7 +252,7 @@ func TestConvertWorkflowDAGToRun(t *testing.T) {
 
 func TestCreateRunFromWorkflow(t *testing.T) {
 	var (
-		folder    = "/home/tpp/go/src/github.com/vfluxus/demo-cwl/wes/"
+		folder    = "/home/tpp/go/src/workflow/demo-cwl/wes/"
 		cwlfile   = "wes.cwl"
 		inputPath = "wes.yml"
 		userID    = "thanhphanphu18"
@@ -290,7 +290,7 @@ func TestCreateRunFromWorkflow(t *testing.T) {
 
 func TestCreateGraphViz(t *testing.T) {
 	var (
-		folder    = "/home/tpp/go/src/github.com/vfluxus/demo-cwl/wes/"
+		folder    = "/home/tpp/go/src/workflow/demo-cwl/wes/"
 		cwlfile   = "wes.cwl"
 		inputPath = "wes.yml"
 		userID    = "0"
@@ -365,7 +365,7 @@ func TestCreateGraphViz(t *testing.T) {
 
 func TestCreateGraphvizDot(t *testing.T) {
 	var (
-		folder    = "/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/wgs/"
+		folder    = "/home/thanhpp/go/src/workflow/demo-cwl/wgs/"
 		cwlfile   = "wgs.cwl"
 		inputPath = "wgs.yml"
 		userID    = "thanhpp18@gmail.com"
@@ -408,7 +408,7 @@ func TestCreateGraphvizDot(t *testing.T) {
 
 func TestParseCWLInMem(t *testing.T) {
 	var (
-		jsonPath     string = "/home/thanhpp/go/src/github.com/vfluxus/demo-cwl/CWL_scatter_example/createjson.json"
+		jsonPath     string = "/home/thanhpp/go/src/workflow/demo-cwl/CWL_scatter_example/createjson.json"
 		jsonWorkflow        = new(workflowcwl.HttpCWLForm)
 	)
 

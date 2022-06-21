@@ -8,11 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
-	"github.com/vfluxus/valkyrie/api/heimdall"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/dao"
-	"github.com/vfluxus/valkyrie/model"
-	"github.com/vfluxus/valkyrie/utils"
+	"workflow/valkyrie/api/heimdall"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/dao"
+	"workflow/valkyrie/model"
+	"workflow/valkyrie/utils"
 	"gorm.io/gorm"
 )
 

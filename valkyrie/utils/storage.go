@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 
-	"github.com/vfluxus/valkyrie/core"
+	"workflow/valkyrie/core"
 )
 
 func GetBucketMetadata(bucket string) (filecount int32, totalfilesize int64, err error) {

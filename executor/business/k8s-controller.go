@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vfluxus/workflow/executor/api/eddamanager"
-	"github.com/vfluxus/workflow/executor/core"
-	"github.com/vfluxus/workflow/executor/model"
+	"workflow/executor/api/eddamanager"
+	"workflow/executor/core"
+	"workflow/executor/model"
 
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

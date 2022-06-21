@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 
-	"github.com/vfluxus/valkyrie/core"
+	"workflow/valkyrie/core"
 )
 
 func DeleteFromStorage(bucket string, name string, size int64) (ok bool, err error) {

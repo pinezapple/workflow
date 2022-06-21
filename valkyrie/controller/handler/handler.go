@@ -6,11 +6,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/vfluxus/valkyrie/controller"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/dao"
-	"github.com/vfluxus/valkyrie/model"
-	"github.com/vfluxus/valkyrie/utils"
+	"workflow/valkyrie/controller"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/dao"
+	"workflow/valkyrie/model"
+	"workflow/valkyrie/utils"
 )
 
 var (

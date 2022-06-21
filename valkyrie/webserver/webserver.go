@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/vfluxus/valkyrie/controller/handler"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/middleware"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/controller/handler"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/middleware"
+	"workflow/workflow-utils/model"
 
 	echo "github.com/labstack/echo/v4"
 	mw "github.com/labstack/echo/v4/middleware"
@@ -19,7 +19,7 @@ import (
 	// echopprof "github.com/sevenNt/echo-pprof"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
-	_ "github.com/vfluxus/valkyrie/docs"
+	_ "workflow/valkyrie/docs"
 )
 
 func logRequest(logger *core.Logger) echo.MiddlewareFunc {

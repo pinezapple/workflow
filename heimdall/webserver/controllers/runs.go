@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/services"
-	"github.com/vfluxus/heimdall/webserver/forms"
+	"workflow/heimdall/services"
+	"workflow/heimdall/webserver/forms"
 )
 
 // HandleGETRuns handle get run list

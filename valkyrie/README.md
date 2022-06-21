@@ -25,7 +25,7 @@ swag init
 to generate the OpenAPI docs and a Go module.   
 Import the generated Go module to source code
 ```Go
-import _ "github.com/vfluxus/valkyrie/docs
+import _ "workflow/valkyrie/docs
 ```
 and add the to the Router 
 ```

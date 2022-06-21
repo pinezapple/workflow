@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/vfluxus/cwlparser"
-	"github.com/vfluxus/cwlparser/workflowcwl"
-	"github.com/vfluxus/heimdall/services/dto"
+	"workflow/cwlparser"
+	"workflow/cwlparser/workflowcwl"
+	"workflow/heimdall/services/dto"
 )
 
 // Transformer interface defines transform methods

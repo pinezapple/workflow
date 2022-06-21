@@ -7,8 +7,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/core"
+	"workflow/workflow-utils/model"
 )
 
 var (

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/repository/gormdb"
+	"workflow/heimdall/core"
+	"workflow/heimdall/repository/gormdb"
 )
 
 func TestMain(m *testing.M) {

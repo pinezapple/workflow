@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/repository/entity"
+	"workflow/heimdall/repository/entity"
 
-	"github.com/vfluxus/heimdall/repository/gormdb"
+	"workflow/heimdall/repository/gormdb"
 	"gorm.io/gorm"
 )
 

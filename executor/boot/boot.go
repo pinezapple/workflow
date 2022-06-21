@@ -3,10 +3,10 @@ package boot
 import (
 	"context"
 
-	"github.com/vfluxus/workflow-utils/booting"
-	"github.com/vfluxus/workflow/executor/business"
-	"github.com/vfluxus/workflow/executor/core"
-	"github.com/vfluxus/workflow/executor/webserver"
+	"workflow/workflow-utils/booting"
+	"workflow/executor/business"
+	"workflow/executor/core"
+	"workflow/executor/webserver"
 
 	"github.com/spf13/viper"
 )

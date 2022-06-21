@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/infra"
+	"workflow/heimdall/core"
+	"workflow/heimdall/infra"
 
-	"github.com/vfluxus/heimdall/repository"
-	"github.com/vfluxus/heimdall/repository/entity"
-	utilsModel "github.com/vfluxus/workflow-utils/model"
+	"workflow/heimdall/repository"
+	"workflow/heimdall/repository/entity"
+	utilsModel "workflow/workflow-utils/model"
 )
 
 //NOTE: Merge UpdateStatusFail, UpdateStatusCanceling, UpdateStatusPausing to 1 func

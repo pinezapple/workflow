@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/vfluxus/valkyrie/model"
+	"workflow/valkyrie/model"
 )
 
 type bucketDAO struct{}

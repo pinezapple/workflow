@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/services"
-	"github.com/vfluxus/heimdall/utils"
-	"github.com/vfluxus/heimdall/webserver/forms"
+	"workflow/heimdall/services"
+	"workflow/heimdall/utils"
+	"workflow/heimdall/webserver/forms"
 )
 
 // HandlePOSTProject handle create project

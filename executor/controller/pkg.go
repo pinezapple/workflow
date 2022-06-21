@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/core"
+	"workflow/workflow-utils/model"
+	"workflow/executor/core"
 
 	"github.com/labstack/echo"
 )

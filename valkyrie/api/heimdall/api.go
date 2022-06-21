@@ -3,10 +3,10 @@ package heimdall
 import (
 	"encoding/json"
 
-	"github.com/vfluxus/valkyrie/api"
-	"github.com/vfluxus/valkyrie/core"
-	valkyrieModel "github.com/vfluxus/valkyrie/model"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/api"
+	"workflow/valkyrie/core"
+	valkyrieModel "workflow/valkyrie/model"
+	"workflow/workflow-utils/model"
 )
 
 const (

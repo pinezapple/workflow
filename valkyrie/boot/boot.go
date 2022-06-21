@@ -6,10 +6,10 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/vfluxus/valkyrie/business"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/webserver"
-	"github.com/vfluxus/workflow-utils/booting"
+	"workflow/valkyrie/business"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/webserver"
+	"workflow/workflow-utils/booting"
 )
 
 var (

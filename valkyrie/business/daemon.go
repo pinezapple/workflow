@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/dao"
-	"github.com/vfluxus/valkyrie/utils"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/dao"
+	"workflow/valkyrie/utils"
+	"workflow/workflow-utils/model"
 )
 
 var (

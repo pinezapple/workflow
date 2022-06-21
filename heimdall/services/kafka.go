@@ -9,7 +9,7 @@ package services
 // 	"time"
 
 // 	"github.com/Shopify/sarama"
-// 	"github.com/vfluxus/heimdall/core"
+// 	"workflow/heimdall/core"
 // )
 
 // // ----------------------------------------------------------------------------------------------------------------------------

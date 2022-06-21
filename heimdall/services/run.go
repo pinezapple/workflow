@@ -7,11 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/repository"
-	"github.com/vfluxus/heimdall/repository/entity"
-	"github.com/vfluxus/heimdall/services/dto"
-	"github.com/vfluxus/heimdall/webserver/forms"
+	"workflow/heimdall/core"
+	"workflow/heimdall/repository"
+	"workflow/heimdall/repository/entity"
+	"workflow/heimdall/services/dto"
+	"workflow/heimdall/webserver/forms"
 )
 
 // RunService interface

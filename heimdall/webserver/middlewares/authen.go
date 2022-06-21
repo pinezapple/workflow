@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/uc-cdis/go-authutils/authutils"
-	"github.com/vfluxus/heimdall/core"
+	"workflow/heimdall/core"
 )
 
 var (

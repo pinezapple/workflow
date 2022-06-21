@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/api/scheduler"
-	"github.com/vfluxus/workflow/executor/core"
+	"workflow/workflow-utils/model"
+	"workflow/executor/api/scheduler"
+	"workflow/executor/core"
 )
 
 func sleepContext(ctx context.Context, delay time.Duration) {

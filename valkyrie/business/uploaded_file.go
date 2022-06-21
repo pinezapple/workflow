@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/dao"
-	"github.com/vfluxus/valkyrie/model"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/dao"
+	"workflow/valkyrie/model"
 )
 
 func HandleUploadedFile(ctx context.Context, userid, path, resumableFileName, sample, workflowUUID, projectPath, projectID string) (f *model.UploadedFile, err error) {

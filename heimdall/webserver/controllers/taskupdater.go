@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/vfluxus/heimdall/repository"
-	"github.com/vfluxus/heimdall/services"
-	"github.com/vfluxus/heimdall/webserver/forms"
+	"workflow/heimdall/repository"
+	"workflow/heimdall/services"
+	"workflow/heimdall/webserver/forms"
 
 	"github.com/gin-gonic/gin"
 )

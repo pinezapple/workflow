@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/services/dto"
-	"github.com/vfluxus/heimdall/utils"
-	utilmodel "github.com/vfluxus/workflow-utils/model"
+	"workflow/heimdall/core"
+	"workflow/heimdall/services/dto"
+	"workflow/heimdall/utils"
+	utilmodel "workflow/workflow-utils/model"
 )
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

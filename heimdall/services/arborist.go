@@ -9,9 +9,9 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/dvergr/arboristutil"
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/services/dto"
+	"workflow/dvergr/arboristutil"
+	"workflow/heimdall/core"
+	"workflow/heimdall/services/dto"
 )
 
 type IArborist interface {

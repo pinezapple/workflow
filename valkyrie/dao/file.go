@@ -9,9 +9,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/model"
-	"github.com/vfluxus/valkyrie/utils"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/model"
+	"workflow/valkyrie/utils"
 )
 
 type fileDAO struct{}

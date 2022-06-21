@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/Shopify/sarama"
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/core"
-	executorModel "github.com/vfluxus/workflow/executor/model"
+	"workflow/workflow-utils/model"
+	"workflow/executor/core"
+	executorModel "workflow/executor/model"
 )
 
 type consumerHandler struct {

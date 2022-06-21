@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/vfluxus/valkyrie/core"
-	utilsModel "github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/core"
+	utilsModel "workflow/workflow-utils/model"
 )
 
 func DecodeJWT(next echo.HandlerFunc) echo.HandlerFunc {

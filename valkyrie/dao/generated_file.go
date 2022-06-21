@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/model"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/model"
 	"gorm.io/gorm"
 )
 

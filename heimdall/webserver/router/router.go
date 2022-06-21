@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/vfluxus/heimdall/core"
-	_ "github.com/vfluxus/heimdall/docs"
-	"github.com/vfluxus/heimdall/webserver/controllers"
-	"github.com/vfluxus/heimdall/webserver/middlewares"
+	"workflow/heimdall/core"
+	_ "workflow/heimdall/docs"
+	"workflow/heimdall/webserver/controllers"
+	"workflow/heimdall/webserver/middlewares"
 )
 
 func logRequest() gin.HandlerFunc {

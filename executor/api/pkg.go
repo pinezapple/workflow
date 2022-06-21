@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/core"
+	"workflow/workflow-utils/model"
+	"workflow/executor/core"
 
 	retry "github.com/avast/retry-go"
 )

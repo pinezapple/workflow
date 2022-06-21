@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/services"
+	"workflow/heimdall/core"
+	"workflow/heimdall/services"
 )
 
 func TestArborist(t *testing.T) {

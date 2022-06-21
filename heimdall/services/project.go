@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/repository"
-	"github.com/vfluxus/heimdall/repository/entity"
-	"github.com/vfluxus/heimdall/webserver/forms"
+	"workflow/heimdall/repository"
+	"workflow/heimdall/repository/entity"
+	"workflow/heimdall/webserver/forms"
 )
 
 // ProjectService interface

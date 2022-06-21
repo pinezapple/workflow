@@ -7,11 +7,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/labstack/echo/v4"
-	"github.com/vfluxus/valkyrie/controller"
-	"github.com/vfluxus/valkyrie/core"
-	"github.com/vfluxus/valkyrie/dao"
-	"github.com/vfluxus/valkyrie/model"
-	utilsModel "github.com/vfluxus/workflow-utils/model"
+	"workflow/valkyrie/controller"
+	"workflow/valkyrie/core"
+	"workflow/valkyrie/dao"
+	"workflow/valkyrie/model"
+	utilsModel "workflow/workflow-utils/model"
 )
 
 // @Summary Download file

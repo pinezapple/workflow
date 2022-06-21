@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/vfluxus/heimdall/utils"
+	"workflow/heimdall/utils"
 )
 
 // KafkaConfig contains configs for Apache Kafka Client

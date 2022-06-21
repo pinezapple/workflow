@@ -2,9 +2,9 @@ package handler
 
 import (
 	"github.com/labstack/echo"
-	"github.com/vfluxus/workflow/executor/controller"
+	"workflow/executor/controller"
 
-	executorModel "github.com/vfluxus/workflow/executor/model"
+	executorModel "workflow/executor/model"
 )
 
 func DeleteK8STaskAsync(c echo.Context) (erro error) {

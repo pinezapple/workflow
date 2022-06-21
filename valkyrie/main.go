@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/vfluxus/valkyrie/boot"
+	"workflow/valkyrie/boot"
 )
 
 func main() {

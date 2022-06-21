@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/repository/entity"
+	"workflow/heimdall/core"
+	"workflow/heimdall/repository/entity"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm/clause"
 

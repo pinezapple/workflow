@@ -6,8 +6,8 @@ import (
 
 	"github.com/labstack/echo"
 
-	"github.com/vfluxus/workflow/executor/core"
-	executorModel "github.com/vfluxus/workflow/executor/model"
+	"workflow/executor/core"
+	executorModel "workflow/executor/model"
 )
 
 func deleteK8STaskAsync(c echo.Context, request interface{}) (statusCode int, data interface{}, lg *core.LogFormat, logResponse bool, err error) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/vfluxus/workflow-utils/model"
-	"github.com/vfluxus/workflow/executor/core"
+	"workflow/workflow-utils/model"
+	"workflow/executor/core"
 
 	api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -4,10 +4,10 @@ import (
 	"context"
 	"flag"
 
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/infra"
-	"github.com/vfluxus/heimdall/webserver"
-	"github.com/vfluxus/workflow-utils/booting"
+	"workflow/heimdall/core"
+	"workflow/heimdall/infra"
+	"workflow/heimdall/webserver"
+	"workflow/workflow-utils/booting"
 )
 
 var (

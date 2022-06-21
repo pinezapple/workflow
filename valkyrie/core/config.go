@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 
-	"github.com/vfluxus/valkyrie/model"
+	"workflow/valkyrie/model"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/workflow-utils/model"
 )
 
 var (

@@ -12,11 +12,11 @@ import (
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 
-	"github.com/vfluxus/heimdall/core"
-	"github.com/vfluxus/heimdall/repository"
-	"github.com/vfluxus/heimdall/repository/entity"
-	"github.com/vfluxus/heimdall/utils"
-	"github.com/vfluxus/workflow-utils/model"
+	"workflow/heimdall/core"
+	"workflow/heimdall/repository"
+	"workflow/heimdall/repository/entity"
+	"workflow/heimdall/utils"
+	"workflow/workflow-utils/model"
 )
 
 const ()
