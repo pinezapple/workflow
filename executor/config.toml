@@ -1,0 +1,32 @@
+PORT=10002
+ENVIRONMENT="DEVELOPMENT"
+LOG_LEVEL="debug"
+SERVICE_NAME="executor-1"
+
+SELECT_JOB_INTERVAL_TIME = 10
+FAIL_OVER_TIME = 2
+MAX_CONCURRENT_JOB = 1
+
+API_RETRY_COUNT = 3
+PRODUCER_BROKERS=["localhost:9092","localhost:9093"]
+CONSUMER_BROKERS=["localhost:9092","localhost:9093"]
+CONSUMER_TOPICS=["task-executor-1"]
+PRODUCER_TOPICS=["ack", "status"]
+CONSUMER_GROUP="consumer"
+
+K8S_CONFIG_FILE="/home/ubuntu/.kube/config"
+K8S_NAMESPACE="default"
+NODE_NAME="test"
+K8S_DELETE_JOB=false
+K8S_JOB_TTL_AFTER_FINISHED=120
+K8S_MAX_CPU = 1
+K8S_MAX_RAM = 1
+K8S_NODE_LABEL_KEY = "node-label-key"
+K8S_NODE_LABEL_VALUE = "node-label-value"
+
+OUTPUT_DIR_PREFIX = "/home/ubuntu/output"
+FUSE_MOUNT_POINT = ""
+MINIO_ENDPOINT = ""
+
+SCHEDULER_ADDRESS="http://localhost:10001"
+EDDA_ADDRESS="http://localhost:11000"

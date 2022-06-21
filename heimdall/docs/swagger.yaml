@@ -1,0 +1,1146 @@
+basePath: /
+definitions:
+  dto.FilteredFiles:
+    properties:
+      file_path:
+        type: string
+      file_size:
+        type: integer
+    type: object
+  dto.ParamWithRegex:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/dto.FilteredFiles'
+        type: array
+      from:
+        items:
+          type: string
+        type: array
+      prefix:
+        type: string
+      regex:
+        items:
+          type: string
+        type: array
+      scatter:
+        type: boolean
+      secondary_files:
+        items:
+          type: string
+        type: array
+    type: object
+  forms.FolderCreate:
+    properties:
+      name:
+        type: string
+      path:
+        type: string
+    type: object
+  forms.FolderDto:
+    properties:
+      author:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  forms.FolderUpdate:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+    type: object
+  forms.ListRunsDto:
+    properties:
+      next_page_token:
+        type: string
+      runs:
+        items:
+          $ref: '#/definitions/forms.RunStatusDto'
+        type: array
+      total:
+        type: integer
+    type: object
+  forms.ListTasksDto:
+    properties:
+      next_page_token:
+        type: string
+      tasks:
+        items:
+          $ref: '#/definitions/forms.TaskDto'
+        type: array
+      total:
+        type: integer
+    type: object
+  forms.ProjectDto:
+    properties:
+      author:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      folders:
+        items:
+          $ref: '#/definitions/forms.FolderDto'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      summary:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  forms.ProjectForm:
+    properties:
+      description:
+        type: string
+      folders:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      summary:
+        type: string
+    type: object
+  forms.ProjectsDto:
+    properties:
+      next_page_token:
+        type: string
+      projects:
+        items:
+          $ref: '#/definitions/forms.ProjectDto'
+        type: array
+      share_projects:
+        items:
+          $ref: '#/definitions/forms.ProjectDto'
+        type: array
+      total:
+        type: integer
+    type: object
+  forms.RunDto:
+    properties:
+      id:
+        type: string
+      outputs:
+        additionalProperties: true
+        type: object
+      request:
+        $ref: '#/definitions/forms.RunRequestDto'
+      run_log:
+        $ref: '#/definitions/forms.RunLogDto'
+      state:
+        type: string
+      task_logs:
+        items:
+          $ref: '#/definitions/forms.RunLogDto'
+        type: array
+      tasks:
+        items:
+          $ref: '#/definitions/forms.SimpleTaskDto'
+        type: array
+    type: object
+  forms.RunLogDto:
+    properties:
+      cmd:
+        items:
+          type: string
+        type: array
+      end_time:
+        type: string
+      exit_code:
+        type: string
+      name:
+        type: string
+      start_time:
+        type: string
+      stderr:
+        type: string
+      stdout:
+        type: string
+    type: object
+  forms.RunRequestDto:
+    properties:
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+      workflow_engine_parameters:
+        additionalProperties:
+          type: string
+        type: object
+      workflow_params:
+        additionalProperties: true
+        type: object
+      workflow_type:
+        type: string
+      workflow_type_version:
+        type: string
+      workflow_url:
+        type: string
+    type: object
+  forms.RunStatusDto:
+    properties:
+      end_time:
+        type: string
+      id:
+        type: string
+      request:
+        $ref: '#/definitions/forms.RunRequestDto'
+      start_time:
+        type: string
+      state:
+        type: string
+      user:
+        type: string
+    type: object
+  forms.SimpleTaskDto:
+    properties:
+      end_time:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      start_time:
+        type: string
+      state:
+        type: string
+    type: object
+  forms.TaskDto:
+    properties:
+      creation_time:
+        type: string
+      description:
+        type: string
+      executors:
+        items:
+          $ref: '#/definitions/forms.TaskExecutorDto'
+        type: array
+      id:
+        type: string
+      inputs:
+        items:
+          $ref: '#/definitions/forms.TaskInputDto'
+        type: array
+      logs:
+        items:
+          $ref: '#/definitions/forms.TaskLogDto'
+        type: array
+      name:
+        type: string
+      outputs:
+        items:
+          $ref: '#/definitions/forms.TaskOutputDto'
+        type: array
+      resources:
+        $ref: '#/definitions/forms.TaskResourcesDto'
+      state:
+        type: string
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+      volumes:
+        items:
+          type: string
+        type: array
+    type: object
+  forms.TaskExecutorDto:
+    properties:
+      command:
+        items:
+          type: string
+        type: array
+      env:
+        additionalProperties:
+          type: string
+        type: object
+      image:
+        type: string
+      stderr:
+        type: string
+      stdin:
+        type: string
+      stdout:
+        type: string
+      workdir:
+        type: string
+    type: object
+  forms.TaskExecutorLogDto:
+    properties:
+      description:
+        type: string
+      end_time:
+        type: string
+      exit_code:
+        type: integer
+      start_time:
+        type: string
+      stderr:
+        type: string
+      stdout:
+        type: string
+    type: object
+  forms.TaskFormDto:
+    properties:
+      description:
+        type: string
+      executors:
+        items:
+          $ref: '#/definitions/forms.TaskExecutorDto'
+        type: array
+      inputs:
+        items:
+          $ref: '#/definitions/forms.TaskInputDto'
+        type: array
+      name:
+        type: string
+      outputs:
+        items:
+          $ref: '#/definitions/forms.TaskOutputDto'
+        type: array
+      resources:
+        $ref: '#/definitions/forms.TaskResourcesDto'
+      run_url:
+        type: string
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+      volumes:
+        items:
+          type: string
+        type: array
+    type: object
+  forms.TaskInputDto:
+    properties:
+      content:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+    type: object
+  forms.TaskLogDto:
+    properties:
+      description:
+        type: string
+      end_time:
+        type: string
+      logs:
+        items:
+          $ref: '#/definitions/forms.TaskExecutorLogDto'
+        type: array
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      outputs:
+        items:
+          $ref: '#/definitions/forms.TaskOutputFileLogDto'
+        type: array
+      start_time:
+        type: string
+      system_logs:
+        items:
+          type: string
+        type: array
+    type: object
+  forms.TaskOutputDto:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+    type: object
+  forms.TaskOutputFileLogDto:
+    properties:
+      path:
+        type: string
+      size_bytes:
+        type: string
+      url:
+        type: string
+    type: object
+  forms.TaskResourcesDto:
+    properties:
+      cpu_cores:
+        type: integer
+      disk_gb:
+        type: integer
+      preemptible:
+        type: boolean
+      ram_gb:
+        type: integer
+      zones:
+        type: string
+    type: object
+  forms.TaskUpdateResponse:
+    properties:
+      data:
+        type: object
+      error:
+        properties:
+          code:
+            type: integer
+          message:
+            type: string
+        type: object
+    type: object
+  forms.UpdateParamWithRegexFileSizeForm:
+    properties:
+      file_size:
+        items:
+          type: integer
+        type: array
+      param_with_regex:
+        items:
+          $ref: '#/definitions/dto.ParamWithRegex'
+        type: array
+      task_id:
+        type: string
+    type: object
+  forms.UpdateTaskOutputLocationForm:
+    properties:
+      output_location:
+        items:
+          type: string
+        type: array
+      task_id:
+        type: string
+    type: object
+  forms.UpdateTaskStatusForm:
+    properties:
+      status:
+        type: integer
+      task_ids:
+        items:
+          type: string
+        type: array
+      task_uuids:
+        items:
+          type: string
+        type: array
+    type: object
+  forms.WorkflowDto:
+    properties:
+      author:
+        type: string
+      class:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      project_id:
+        type: string
+      project_name:
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/forms.WorkflowStepDto'
+        type: array
+      tags:
+        additionalProperties: true
+        type: object
+      updated_at:
+        type: string
+    type: object
+  forms.WorkflowForm:
+    properties:
+      class:
+        type: string
+      content:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      project_id:
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/forms.WorkflowStepForm'
+        type: array
+      tags:
+        additionalProperties: true
+        type: object
+    type: object
+  forms.WorkflowRunForm:
+    properties:
+      tags:
+        additionalProperties: true
+        type: object
+      workflow_attachments:
+        items:
+          type: string
+        type: array
+      workflow_engine_parameters:
+        additionalProperties: true
+        type: object
+      workflow_params:
+        additionalProperties: true
+        type: object
+      workflow_type:
+        type: string
+      workflow_type_version:
+        type: string
+      workflow_url:
+        type: string
+    type: object
+  forms.WorkflowStepDto:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  forms.WorkflowStepForm:
+    properties:
+      content:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  forms.WorkflowsDto:
+    properties:
+      next_page_token:
+        type: string
+      total:
+        type: integer
+      workflows:
+        items:
+          $ref: '#/definitions/forms.WorkflowDto'
+        type: array
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a Heimdall server.
+  license:
+    name: VinBigData
+    url: http://vinbigdata.org
+  termsOfService: http://swagger.io/terms/
+  title: Heimdall API
+  version: "1.0"
+paths:
+  /internal/tasks/output:
+    post:
+      description: Update task output location by scheduler
+      parameters:
+      - description: Update info
+        in: body
+        name: updateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UpdateTaskOutputLocationForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update success
+          schema:
+            allOf:
+            - $ref: '#/definitions/forms.TaskUpdateResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Update task output location by scheduler
+      tags:
+      - taskupdate
+  /internal/tasks/params:
+    post:
+      description: Update ParamRegex And FileSize by scheduler
+      parameters:
+      - description: Update info
+        in: body
+        name: UpdateReq
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UpdateParamWithRegexFileSizeForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update success
+          schema:
+            allOf:
+            - $ref: '#/definitions/forms.TaskUpdateResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Update ParamRegex And FileSize by scheduler
+      tags:
+      - taskupdate
+  /internal/tasks/status:
+    post:
+      description: Update task status by scheduler
+      parameters:
+      - description: Update info
+        in: body
+        name: updateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/forms.UpdateTaskStatusForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update success
+          schema:
+            allOf:
+            - $ref: '#/definitions/forms.TaskUpdateResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Update task status by scheduler
+      tags:
+      - taskupdate
+  /projects:
+    get:
+      description: Get projects
+      parameters:
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Get share projects
+        in: query
+        name: share
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List Projects
+          schema:
+            items:
+              $ref: '#/definitions/forms.ProjectsDto'
+            type: array
+      summary: Get projects
+      tags:
+      - project
+    post:
+      description: Create project
+      parameters:
+      - description: Project info
+        in: body
+        name: sample
+        required: true
+        schema:
+          $ref: '#/definitions/forms.ProjectForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Create Project ok
+          schema:
+            $ref: '#/definitions/forms.ProjectDto'
+      summary: Create project
+      tags:
+      - project
+  /projects/{project_id}:
+    delete:
+      description: Delete project
+      parameters:
+      - description: project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Delete Project ok
+          schema:
+            type: string
+      summary: Delete project
+      tags:
+      - project
+    get:
+      description: Get project
+      parameters:
+      - description: project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Get Project ok
+          schema:
+            $ref: '#/definitions/forms.ProjectDto'
+      summary: Get project
+      tags:
+      - project
+    put:
+      description: Update project
+      parameters:
+      - description: project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Project info
+        in: body
+        name: sample
+        required: true
+        schema:
+          $ref: '#/definitions/forms.ProjectForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update Project ok
+          schema:
+            $ref: '#/definitions/forms.ProjectDto'
+      summary: Update project
+      tags:
+      - project
+  /projects/{project_id}/folders:
+    post:
+      description: Create new folder in a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Folder info
+        in: body
+        name: folder
+        required: true
+        schema:
+          $ref: '#/definitions/forms.FolderCreate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create new folder in a project
+      tags:
+      - project
+    put:
+      description: Update folder in a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Folder info
+        in: body
+        name: folder
+        required: true
+        schema:
+          $ref: '#/definitions/forms.FolderUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Update folder in a project
+      tags:
+      - project
+  /projects/{project_id}/folders/{folder_id}:
+    delete:
+      description: Delete folder in a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Folder ID
+        in: path
+        name: folder_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Delete folder in a project
+      tags:
+      - project
+  /projects/{project_uuid}/workflows:
+    get:
+      description: Return all workflows belong a project
+      parameters:
+      - description: project UUID
+        in: path
+        name: project_uuid
+        required: true
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List workflows of project
+          schema:
+            items:
+              $ref: '#/definitions/forms.WorkflowsDto'
+            type: array
+      summary: Get Workflows of Project
+      tags:
+      - project
+  /runs:
+    get:
+      description: Get list run
+      parameters:
+      - description: page size
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      - description: page token
+        in: query
+        name: page_token
+        required: true
+        type: integer
+      - description: Filter. Split by ;
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: a lot of runs
+          schema:
+            $ref: '#/definitions/forms.ListRunsDto'
+      summary: Get list run
+      tags:
+      - run
+    post:
+      description: Create run and start
+      parameters:
+      - description: Create Run Info
+        in: body
+        name: createReq
+        required: true
+        schema:
+          $ref: '#/definitions/forms.WorkflowRunForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Run uuid
+          schema:
+            type: string
+      summary: Create run and start
+      tags:
+      - run
+  /runs/:run_id:
+    get:
+      description: Get run by id
+      parameters:
+      - description: run uuid
+        in: path
+        name: run_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Run info
+          schema:
+            $ref: '#/definitions/forms.RunDto'
+      summary: Get run by id
+      tags:
+      - run
+  /runs/:run_id/status:
+    get:
+      description: Get run status by id
+      parameters:
+      - description: run uuid
+        in: path
+        name: run_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Run info
+          schema:
+            $ref: '#/definitions/forms.RunDto'
+      summary: Get run status by id
+      tags:
+      - run
+  /tasks:
+    get:
+      description: Get tasks info
+      parameters:
+      - description: page size
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      - description: page token
+        in: query
+        name: page_token
+        required: true
+        type: integer
+      - description: Filter. Split by ;
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: tasks
+          schema:
+            $ref: '#/definitions/forms.ListTasksDto'
+      summary: Get tasks info
+      tags:
+      - task
+    post:
+      description: Create task
+      parameters:
+      - description: task info
+        in: body
+        name: createReq
+        required: true
+        schema:
+          $ref: '#/definitions/forms.TaskFormDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: uuid
+          schema:
+            type: string
+      summary: Create task
+      tags:
+      - task
+  /tasks/:task_id:
+    get:
+      description: Get task info by id
+      parameters:
+      - description: task id
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/forms.TaskDto'
+      summary: Get task info by id
+      tags:
+      - task
+  /workflows:
+    get:
+      description: Get workflows by param
+      parameters:
+      - description: page size
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      - description: page token
+        in: query
+        name: page_token
+        required: true
+        type: integer
+      - description: Filter. Split by ;
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflows information
+          schema:
+            $ref: '#/definitions/forms.WorkflowsDto'
+      summary: Get workflows by param
+      tags:
+      - workflow
+    post:
+      description: Create workflow
+      parameters:
+      - description: workflow info
+        in: body
+        name: createRequest
+        required: true
+        schema:
+          $ref: '#/definitions/forms.WorkflowForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow info
+          schema:
+            $ref: '#/definitions/forms.WorkflowDto'
+      summary: Create workflow
+      tags:
+      - workflow
+  /workflows/:workflow_id:
+    delete:
+      description: Delete workflow by id
+      parameters:
+      - description: workflow id
+        in: path
+        name: workflow_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Delete workflow by id
+      tags:
+      - workflow
+    get:
+      description: Get workflows by ID
+      parameters:
+      - description: workflow id
+        in: path
+        name: workflow_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: workflow response
+          schema:
+            $ref: '#/definitions/forms.WorkflowDto'
+      summary: Get workflows by ID
+      tags:
+      - workflow
+    put:
+      description: Update workflow by id
+      parameters:
+      - description: workflow id
+        in: path
+        name: workflow_id
+        required: true
+        type: integer
+      - description: Update info
+        in: body
+        name: updateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/forms.WorkflowForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow updated info
+          schema:
+            $ref: '#/definitions/forms.WorkflowDto'
+      summary: Update workflow by id
+      tags:
+      - workflow
+  /workflows/:workflow_id/runs:
+    get:
+      description: Get run created from workflow id
+      parameters:
+      - description: workflow id
+        in: path
+        name: workflow_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Run info
+          schema:
+            $ref: '#/definitions/forms.ListRunsDto'
+      summary: Get run created from workflow id
+      tags:
+      - run
+swagger: "2.0"

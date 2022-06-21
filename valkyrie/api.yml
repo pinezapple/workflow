@@ -1,0 +1,316 @@
+openapi: 3.0.0
+# LINK : https://editor.swagger.io/
+
+info:
+  title: API of transformer
+  version: Updated for version v2.0
+
+servers:
+  - url: 'http://127.0.0.1:10004'
+
+components:
+  schemas:
+# ERROR RESPONSE
+    error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+    errorResponse:
+      type: object
+      properties:
+        error:
+          $ref: "#/components/schemas/error"
+        data:
+          type: object
+          description: error
+# ERROR RESPONSE
+
+# file
+    files:
+      properties:
+        error:
+          $ref:  "#/components/schemas/error"
+        data:
+          type: object
+          properties:
+              path:
+                type: string
+              user_id:
+                type: string
+              run_uuid:
+                type: string
+              run_name:
+                type: string
+              task_uuid:
+                type: string
+              task_name:
+                type: string
+              file_name:
+                type: string
+              file_size:
+                type: integer
+              create_at:
+                type: integer
+              expired_at:
+                type: integer
+# file
+
+#internalUploadFileReq
+    fileUpload:
+      properties:
+        user_id:
+          type: string
+        run_id:
+          type: string
+        task_id:
+          type: string
+        file_name:
+          type: string
+        file_size:
+          type: integer
+#internalUploadFileReq
+
+#presignedURLreq
+    presignedURLreq:
+      properties:
+        run_id:
+          type: string
+        task_id:
+          type: string
+        file_name:
+          type: string
+        ttl:
+          type: integer
+#presignedURLreq
+
+    presignedURLResp:
+      properties:
+        error:
+          $ref:  "#/components/schemas/error"
+        data:
+          type: string
+
+paths:
+  /files:
+    get:
+      description: Get files from the system with filters and order
+      parameters:
+        - name: page_size
+          description: >-
+            OPTIONAL
+            The preferred number of files to return in a page.
+            If not provided, the implementation should use a default page size.
+            The implementation must not return more items
+            than `page_size`, but it may return fewer.  Clients should
+            not assume that if fewer than `page_size` items are
+            returned that all items have been returned.  The
+            availability of additional pages is indicated by the value
+            of `next_page_token` in the response.
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: page_token
+          description: >-
+            OPTIONAL
+            Token to use to indicate where to start getting results. 
+            If unspecified, return the first page of results.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: >-
+            The filter query
+          schema:
+            type: string
+          examples:
+            filename:
+              value: "file_name=a"
+            date:
+              value: "created_at>=2020-01-01"
+            filename_and_date:
+              value: "filename=a;created_at>=2020-01-01"
+        - name: order
+          in: query
+          description: >-
+            The order query
+          schema:
+            type: string
+          examples: 
+            date:
+              value: "created_at"
+            filename:
+              value: "filename"
+            date_and_filename:
+              value: "date;filename"
+      responses:
+        '200':
+          description: OK
+          content:
+              application/json:
+                schema:
+                  $ref:  "#/components/schemas/files"
+                  
+        '401':
+          description: Method not allowed
+          content:
+              application/json:
+                schema:
+                  $ref:  "#/components/schemas/errorResponse"
+                  
+        '500':
+          description: Internal Server Error
+          content:
+              application/json:
+                schema:
+                  $ref:  "#/components/schemas/errorResponse"
+                  
+  /files/download:
+    get:
+      description: Download file from ther server
+      parameters:
+        - name: run_uuid
+          description: >-
+            run_uuid of the requested file
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: string
+        - name: task_uuid
+          description: >-
+            task_uuid of the requested file
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: filename
+          in: query
+          description: >-
+            filename of the requested file
+          schema:
+            type: string
+            
+      responses:
+        '200':
+          description: OK
+          content:
+              application/octet-stream:
+                schema:
+                  type: string
+                  format: binary
+  
+  /files/upload:
+    post:
+      description: User upload file to server/cloud
+      parameters:
+        - name: rewrite
+          description: >-
+            whether to rewrite the file or not, 1 is to rewrite the file
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                  files:
+                    type: string
+                    format: binary
+    
+      responses:
+        '200':
+          description: createdOK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+                
+        '401':
+          description: Method not allowed 
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/errorResponse"
+                
+  /internal/files/upload:
+    post:
+      description: Internal file upload to cloud
+      requestBody:
+        required: true
+        content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/fileUpload"
+                
+      responses:
+        '200':
+          description: createdOK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+                
+        '401':
+          description: Method not allowed 
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/errorResponse"
+
+  /files/presigned:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/presignedURLreq"
+
+      responses:
+        '200':
+          description: createdOK, presigned URL is the data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/presignedURLResp"
+                
+        '401':
+          description: Method not allowed 
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref:  "#/components/schemas/errorResponse"
+
+

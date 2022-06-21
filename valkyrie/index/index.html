@@ -1,0 +1,70 @@
+<html>
+  <header>
+    <title>Hello to sample resumable upload js</title>
+  </header>
+  <body>
+    <style type="text/css">
+      .resume-upload {
+        width: 60%;
+        height: 200px;
+        background: skyblue;
+        margin: 40 auto;
+        border: 1px dashed black;
+      }
+    </style>
+
+    <div class="resume-upload" id="upload-area-1">
+    </div>
+
+    <div class="resume-upload" id="upload-area-2">
+    </div>
+
+    <input type="submit" value="Submit" onclick="startUpload()">
+
+    <script src="./resumable.js"></script>
+    <script>
+      var r = new Resumable({
+        target: 'http://54.179.57.192:10006/files/_resumeable',
+        chunkSize: 20 * 1024 * 1024,
+        maxChunkRetries: 3,
+        simultaneousUploads: 1,
+        chunkRetryInterval: 1000,
+        headers: {"Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6ImZlbmNlX2tleV9rZXlzIn0.eyJwdXIiOiJhY2Nlc3MiLCJhdWQiOlsiZGF0YSIsInVzZXIiLCJmZW5jZSIsIm9wZW5pZCJdLCJzdWIiOiIzMCIsImlzcyI6Imh0dHBzOi8vZ2Vub21lLnZpbmJpZ2RhdGEub3JnL3VzZXIiLCJpYXQiOjE2MDk5OTQyMjIsImV4cCI6MTYwOTk5NzgyMiwianRpIjoiYjliN2U5NTYtOWM1ZS00NWQwLTkzZDQtNjJlNjliNWQ5YmEyIiwic2NvcGUiOlsiZGF0YSIsInVzZXIiLCJmZW5jZSIsIm9wZW5pZCJdLCJjb250ZXh0Ijp7InVzZXIiOnsibmFtZSI6InR1YW4uaHVzdC5jc0BnbWFpbC5jb20iLCJpc19hZG1pbiI6dHJ1ZSwiZ29vZ2xlIjp7InByb3h5X2dyb3VwIjpudWxsfSwicHJvamVjdHMiOnsiVk5QR3giOlsidXBsb2FkIiwicmVhZCIsImNyZWF0ZSIsInJlYWQtc3RvcmFnZSIsInVwZGF0ZSIsImRlbGV0ZSJdLCJWTjEwMDBHIjpbInVwbG9hZCIsInJlYWQiLCJjcmVhdGUiLCJyZWFkLXN0b3JhZ2UiLCJ1cGRhdGUiLCJkZWxldGUiXX19fSwiYXpwIjoiIn0.XmOfyEui3yeHaNXG5VadamdSZZIFZ9TCSzV4stTWV3X7EFlb0ZlyGbQhTnztJ4A9t23D3lT-ccPaJj7rspAhhVO_-zJHfDWLo_DzciWU65yjxcyfqhNkIlQZ67eRA3gHL8FVu-BmDBPML9yfeGXnX-whsMZxoZBrlF4IQ2q2Eg6OoTlAyiXNHKGfl8HusDTiZ-mpah9iqCLGn_PcLrZMdzaeXfb36slyONuGucvcfan_YeF0vYSJq6cOfcDxqJhlNO54MiQDlk1GXdOWs4Ufx-F8he2Mx9QJDQqBtTqkYngg6kWQsZ66wuE6NDTI_FiSCce0lHMGkV76IgPmErtQzw"},
+        query: {"sample" : "Le_Minh_Loc", "workflow":"a8f40540-ff70-49c7-96dd-5d2fe0295e3d"}
+      });
+      // r.assignBrowse(document.getElementById('upload-area'), false);
+      r.assignBrowse(document.getElementsByClassName('resume-upload'), false);
+      // Resumable.js isn't supported, fall back on a different method
+      if (!r.support) location.href = '/some-old-crappy-uploader';
+
+      r.on('fileAdded', function (file)
+      {
+        console.log(file)
+        r.upload()
+      });
+      r.on('fileSuccess', function (file, message)
+      {
+        console.log("Success" + JSON.stringify(message))
+      });
+      r.on('fileError', function (file, message)
+      {
+        console.log("Failed ")
+      });
+      r.on('fileProgress', function (file, message)
+      {
+        console.log("File progress " + file.progress())
+      });
+      r.on('complete', function ()
+      {
+        console.log("upload all completed")
+      });
+      r.on('progress', function() {
+        console.log("upload progress" + r.progress())
+      });
+
+      function startUpload() {
+        r.upload()
+      }
+    </script>
+  </body>
+</html>

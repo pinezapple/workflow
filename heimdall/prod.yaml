@@ -1,0 +1,40 @@
+database:
+    host: "127.0.0.1"
+    port: "5432"
+    user: "workflowuser"
+    password: "123456"
+    dbname: "workflowdb"
+
+server:
+    host: "127.0.0.1"
+    port: "8084"
+    shutdowntimeout: "5"
+    loglevel: "debug"
+    environment: "production"
+    jwks_url: "https://genome.vinbigdata.org/user/.well-known/jwks"
+    audiences: 
+      - user
+      - openid
+    issuers:
+      - https://genome.vinbigdata.org/user
+    purpose: access
+
+    
+scheduler:
+    host: "http://54.179.57.192"
+    port: "10001"
+
+kafka:
+    producerbrokers:
+        - "a"
+    consumerbrokers:
+        - "a"
+    producertopics:
+        - "a"
+    consumertopics:
+        - "a"
+    consumergroup: "a"
+
+transformer:
+    host: "http://127.0.0.1"
+    port: "8083"

@@ -1,0 +1,168 @@
+openapi: '3.0.0'
+
+info:
+  title: API for updater Task Info
+  version: v1.0
+
+paths:
+  /taskupdate/status:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStatusForm"
+
+      responses:
+        '200':
+          description: update status ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        '406':
+          description: can not bind json
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        '500':
+          description: can not update status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+
+# -----------
+  /taskupdate/paramwithregexfilesize:
+    post:
+      description: Only update not nil field
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateParamWithRegexAndFileSizeForm"
+
+      responses:
+        '200':
+          description: update param with regex and file size ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        '406':
+          description: can not bind json
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        '500':
+          description: can not update param with regex and file size
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+
+
+# -----------
+  /taskupdate/outputlocation:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskOutputLocationForm"
+
+      responses:
+        '200':
+          description: update output location ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        '406':
+          description: can not bind json
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+        '500':
+          description: can not update output location
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Response"
+
+
+# ----------- COMPONENTS PART -----------
+components:
+  schemas:
+    Response:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+        data:
+          type: object
+
+    UpdateStatusForm:
+      type: object
+      properties:
+        task_ids:
+          type: array
+          items:
+            type: string
+        status:
+          type: integer
+          minimum: 0
+
+    UpdateTaskOutputLocationForm:
+      type: object
+      properties:
+        task_id:
+          type: string
+        output_location:
+          type: array
+          items:
+            type: string
+
+    paramWithRegex:
+      type: object
+      properties:
+        from:
+          type: array
+          items:
+            type: string
+        secondary_files:
+          type: array
+          items:
+            type: string
+        regex:
+          type: array
+          items:
+            type: string
+        prefix:
+          type: string
+    
+    UpdateParamWithRegexAndFileSizeForm:
+      type: object
+      properties:
+        task_id:
+          type: string
+        file_size:
+          type: array
+          items:
+            type: integer
+        param_with_regex:
+          type: array
+          items:
+            $ref:  "#/components/schemas/paramWithRegex"
+    

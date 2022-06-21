@@ -1,0 +1,579 @@
+definitions:
+  model.CreateNewDatasetReq:
+    properties:
+      dataset_name:
+        type: string
+    type: object
+  model.CreateNewSampleReq:
+    properties:
+      dataset_uuid:
+        type: string
+      file_uuid:
+        items:
+          type: string
+        type: array
+      sample_name:
+        type: string
+      workflow_uuid:
+        type: string
+    type: object
+  model.DataFile:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      path:
+        type: string
+      project_id:
+        type: string
+      project_path:
+        type: string
+      size:
+        type: integer
+    type: object
+  model.Dataset:
+    properties:
+      created_at:
+        type: string
+      dataset_name:
+        type: string
+      dataset_uuid:
+        type: string
+      username:
+        type: string
+    type: object
+  model.GeneratedFile:
+    properties:
+      bucket:
+        type: string
+      created_at:
+        type: string
+      done_run:
+        type: boolean
+      expired_at:
+        description: The time file remains on cloud
+        type: string
+      file_uuid:
+        type: string
+      name:
+        type: string
+      path:
+        description: local path on hard disk or s3 path
+        type: string
+      project_id:
+        type: string
+      project_path:
+        type: string
+      run_id:
+        type: integer
+      run_name:
+        type: string
+      run_uuid:
+        type: string
+      size:
+        type: integer
+      tags:
+        type: integer
+      task_id:
+        type: string
+      task_name:
+        type: string
+      task_uuid:
+        type: string
+      upload_expired_at:
+        description: The time file remains on hard disk waiting for reupload
+        type: string
+      upload_success:
+        type: boolean
+      username:
+        description: run metadata
+        type: string
+      workflow_uuid:
+        type: string
+    type: object
+  model.MutualFile:
+    properties:
+      bucket:
+        type: string
+      created_at:
+        type: string
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      file_uuid:
+        type: string
+      path:
+        description: local path on hard disk or s3 path
+        type: string
+      sample_index:
+        type: integer
+      username:
+        description: user metadata
+        type: string
+    type: object
+  model.SampleDetailResp:
+    properties:
+      created_at:
+        type: string
+      dataset_uuid:
+        type: string
+      sample_files:
+        items:
+          $ref: '#/definitions/model.MutualFile'
+        type: array
+      sample_name:
+        type: string
+      sample_uuid:
+        type: string
+      username:
+        type: string
+      workflow_uuid:
+        type: string
+    type: object
+  model.UpdateFilePath:
+    properties:
+      file_id:
+        type: string
+      project_path:
+        type: string
+    type: object
+  model.UpdatePathFiles:
+    properties:
+      path_files:
+        items:
+          $ref: '#/definitions/model.UpdateFilePath'
+        type: array
+    type: object
+  model.UploadedFile:
+    properties:
+      bucket:
+        type: string
+      created_at:
+        type: string
+      deleted:
+        type: boolean
+      expired_at:
+        description: The time file remains on cloud
+        type: string
+      file_uuid:
+        type: string
+      name:
+        type: string
+      path:
+        description: local path on hard disk or s3 path
+        type: string
+      project_id:
+        description: project metatdata
+        type: string
+      project_path:
+        type: string
+      safe:
+        type: boolean
+      size:
+        type: integer
+      upload_expired_at:
+        description: The time file remains on hard disk waiting for reupload
+        type: string
+      upload_success:
+        description: file metadata
+        type: boolean
+      username:
+        description: user metadata
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /dataset:
+    get:
+      description: Get datasets
+      parameters:
+      - description: dataset UUID
+        in: path
+        name: dataset_uuid
+        required: true
+        type: string
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List datasets
+          schema:
+            items:
+              $ref: '#/definitions/model.Dataset'
+            type: array
+      summary: Get datasets
+      tags:
+      - dataset
+  /datasets:
+    post:
+      description: Create dataset
+      parameters:
+      - description: Dataset info
+        in: body
+        name: sample
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateNewDatasetReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Create dataset
+      tags:
+      - dataset
+  /files:
+    get:
+      description: Get uploaded files
+      parameters:
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List uploaded files
+          schema:
+            items:
+              $ref: '#/definitions/model.UploadedFile'
+            type: array
+      summary: Get uploaded files
+      tags:
+      - files
+  /files/:file_id:
+    delete:
+      description: Delete file
+      parameters:
+      - description: File id
+        in: path
+        name: file_id
+        required: true
+        type: string
+      summary: Delete file
+      tags:
+      - files
+  /files/:file_name:
+    get:
+      description: Download file
+      parameters:
+      - description: File name
+        in: path
+        name: file_name
+        required: true
+        type: string
+      - description: Run UUID
+        in: query
+        name: run_uuid
+        required: true
+        type: string
+      - description: Task UUID
+        in: query
+        name: task_uuid
+        required: true
+        type: string
+      summary: Download file
+      tags:
+      - files
+  /files/_resumable:
+    get:
+      description: Check resumable chunk is uploaded or not
+      parameters:
+      - description: Identifier of upload
+        in: query
+        name: resumableIdentifier
+        required: true
+        type: string
+      - description: Chunk number
+        in: query
+        name: resumableChunkNumber
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Check Resumable chunk is uploaded
+      tags:
+      - files
+    post:
+      description: Upload a resumable chunk
+      parameters:
+      - description: Identifier of upload
+        in: query
+        name: resumableIdentifier
+        required: true
+        type: string
+      - description: Chunk number
+        in: query
+        name: resumableChunkNumber
+        required: true
+        type: string
+      - description: File name
+        in: query
+        name: resumableFilename
+        required: true
+        type: string
+      - description: Total chunks of a upload file
+        in: query
+        name: resumableTotalChunks
+        required: true
+        type: integer
+      - description: Sample name
+        in: query
+        name: sample
+        type: string
+      - description: Workflow UUID
+        in: query
+        name: workflow
+        type: string
+      - description: Project Path
+        in: query
+        name: projectPath
+        required: true
+        type: string
+      - description: Project ID
+        in: query
+        name: projectID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Upload a resumable chunk
+      tags:
+      - files
+  /files/project_path:
+    put:
+      description: Update project path for files with uuids
+      parameters:
+      - description: Update project path
+        in: body
+        name: updateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdatePathFiles'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Update project path for files
+      tags:
+      - files
+  /samples:
+    get:
+      description: Get sample
+      parameters:
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List sample files
+          schema:
+            items:
+              $ref: '#/definitions/model.SampleDetailResp'
+            type: array
+      summary: Get sample
+      tags:
+      - samples
+    post:
+      description: Create sample
+      parameters:
+      - description: Sample info
+        in: body
+        name: sample
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateNewSampleReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Create sample
+      tags:
+      - samples
+  /samples/:sample_uuid:
+    get:
+      description: Get sample detail
+      parameters:
+      - description: Sample uuid
+        in: path
+        name: sample_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List sample files
+          schema:
+            type: ""
+      summary: Get sample detail
+      tags:
+      - samples
+  /samples/name/:sample_name:
+    get:
+      description: Check sample name is existed
+      parameters:
+      - description: Sample name
+        in: path
+        name: sample_name
+        required: true
+        type: string
+      - description: Workflow UUID
+        in: query
+        name: workflow
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List sample files
+          schema:
+            type: ""
+      summary: Check sample name is existed
+      tags:
+      - samples
+  /samples/workflow/:dataset_uuid:
+    get:
+      description: Get samples by dataset
+      parameters:
+      - description: dataset UUID
+        in: path
+        name: dataset_uuid
+        required: true
+        type: string
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List sample files
+          schema:
+            items:
+              $ref: '#/definitions/model.SampleDetailResp'
+            type: array
+      summary: Get samples by dataset
+      tags:
+      - samples
+  /samples/workflow/:workflow_uuid:
+    get:
+      description: Get samples by workflow
+      parameters:
+      - description: Workflow UUID
+        in: path
+        name: workflow_uuid
+        required: true
+        type: string
+      - description: Number of result
+        in: query
+        name: page_size
+        type: integer
+      - description: Current page
+        in: query
+        name: page_token
+        type: integer
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List sample files
+          schema:
+            items:
+              $ref: '#/definitions/model.SampleDetailResp'
+            type: array
+      summary: Get samples by workflow
+      tags:
+      - samples
+swagger: "2.0"
