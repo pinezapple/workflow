@@ -2,10 +2,9 @@ package business
 
 import (
 	"context"
-	"time"
 
-	"workflow/workflow-utils/model"
 	"workflow/executor/core"
+	"workflow/workflow-utils/model"
 
 	api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,27 +13,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
-
-// only enable if K8S fail to delete job
-func DeleteDoneK8SJobDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
-	lg := core.GetLogger()
-	lg.Info("Start delete k8s done job daemon")
-	fn = func() {
-		for {
-			sleepContext(parentCtx, time.Duration(core.GetMainConfig().K8SConfig.JobDeleteIntervalCheck)*time.Second)
-			deleteMap := core.GetK8SDeleteJobMap()
-			for key, value := range deleteMap {
-				if value.Before(time.Now()) {
-					core.ActualDeleteK8SJob(parentCtx, key)
-					core.RemoveFromK8SDeleteJobMap(key)
-				} else {
-					break
-				}
-			}
-		}
-	}
-	return fn, nil
-}
 
 func RunK8SDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
 	lg := core.GetLogger()

@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"workflow/workflow-utils/model"
 	"workflow/executor/core"
 	executorModel "workflow/executor/model"
+	"workflow/workflow-utils/model"
 
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -21,73 +21,6 @@ const (
 	defaultBashCommand = "/bin/bash"
 	defaultBashParam   = "-c"
 )
-
-func CheckDeleteTask(lg *core.LogFormat, resp *executorModel.DeleteTaskNoti) (err error) {
-	core.TaskContextMapLock.RLock()
-	defer core.TaskContextMapLock.RUnlock()
-
-	if core.IfTaskContext(resp.TaskID) {
-		return nil
-	} else {
-		err, _ = core.DeleteK8SJob(context.Background(), resp.TaskID, true)
-		return
-	}
-}
-
-/*
-func ProcessSelectTaskResp(ctx context.Context, lg *core.LogFormat, resp *executorModel.SelectTaskResp) (err error) {
-	// create context first for safety reason
-	core.TaskHandleLock.Lock()
-	var childCtxs []context.Context
-	for i := 0; i < len(resp.Tasks); i++ {
-		job := resp.Tasks[i]
-		childCtx, cancel := context.WithCancel(ctx)
-		childCtxs = append(childCtxs, childCtx)
-		core.AddTaskContext(job.TaskID, cancel)
-	}
-	core.TaskHandleLock.Unlock()
-
-	for i := 0; i < len(resp.Tasks); i++ {
-		job := resp.Tasks[i]
-		if core.IfJobInPro(job.TaskID) {
-			continue
-		}
-
-		core.AddJobInPro(job.TaskID, job.ERam, job.ECPU, job.TaskUUID)
-		err = CreateK8SJob(childCtxs[i], &job, lg)
-		if err != nil {
-			//if err == fmt.Errorf("Missing secondary file") {
-			// handler fail
-			req := &executorModel.UpdateStatusCheck{
-				Success: false,
-				TaskID:  job.TaskID,
-			}
-
-			PushUpdateStatusToKafka(req) // push to kafka
-			/*
-				} else {
-					PushAckToKafka(&executorModel.TaskAck{
-						TaskID: job.TaskID,
-						Status: model.StatusInqueue,
-					})
-
-				}
-			lg.Errorf(err.Error())
-			core.DeleteTaskContext(job.TaskID)
-			core.DeleteJobInPro(job.TaskID)
-		} else {
-			atomic.AddInt64(&core.CPULeft, -job.ECPU)
-			atomic.AddInt64(&core.RAMLeft, -job.ERam)
-			PushAckToKafka(&executorModel.TaskAck{
-				TaskID: job.TaskID,
-				Status: model.StatusRunning,
-			})
-			core.DeleteTaskContext(job.TaskID)
-		}
-	}
-	return
-}
-*/
 
 func CreateK8SJob(ctx context.Context, job *model.TaskDTO, lg *core.LogFormat, temporalWfID, temporalRunID string) (err error) {
 	// TODO: fix this to fail by secondary files
@@ -220,35 +153,6 @@ func ConstructMountPoint(job *model.TaskDTO) (volume []apiv1.Volume, volumeMount
 			counter = append(counter, count)
 			remainder = append(remainder, remain)
 		}
-
-		/*
-			for j := 0; j < len(job.ParamsWithRegex[i].Regex); j++ {
-				if _, err := os.Stat(job.ParamsWithRegex[i].Regex[j]); err == nil {
-					path := GetParentDirectory(GetFileFUSEPath(job.ParamsWithRegex[i].Regex[j]))
-					if _, ok := dirMap[path]; ok {
-						continue
-					}
-					dirMap[path] = true
-					v := apiv1.Volume{
-						Name: job.TaskID + "-regex-" + strconv.Itoa(i) + strconv.Itoa(j),
-						VolumeSource: apiv1.VolumeSource{
-							HostPath: &apiv1.HostPathVolumeSource{
-								Path: path,
-								Type: &dirType,
-							},
-						},
-					}
-					volume = append(volume, v)
-
-					vm := apiv1.VolumeMount{
-						//MountPath: job.ParamsWithRegex[i].Regex[j],
-						MountPath: path,
-						Name:      job.TaskID + "-regex-" + strconv.Itoa(i) + strconv.Itoa(j),
-					}
-					volumeMount = append(volumeMount, vm)
-				}
-			}
-		*/
 
 		for j := 0; j < len(job.ParamsWithRegex[i].Files); j++ {
 			path := GetParentDirectory(GetFileFUSEPath(job.ParamsWithRegex[i].Files[j].Filepath))

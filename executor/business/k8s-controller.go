@@ -3,15 +3,14 @@ package business
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"workflow/executor/api/eddamanager"
 	"workflow/executor/core"
-	"workflow/executor/model"
+	"workflow/workflow-utils/model"
 
+	"go.temporal.io/sdk/client"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -27,14 +26,14 @@ var podMapLock sync.RWMutex
 
 func SetPod(name string) {
 	podMapLock.Lock()
+	defer podMapLock.Unlock()
 	podMap[name] = true
-	podMapLock.Unlock()
 }
 
 func GetPod(name string) (ok bool) {
 	podMapLock.Lock()
+	defer podMapLock.Unlock()
 	_, ok = podMap[name]
-	podMapLock.Unlock()
 	return
 }
 
@@ -47,11 +46,10 @@ type ControllerEvent struct {
 }
 
 type Controller struct {
-	logger    *core.LogFormat //TODO: logger
+	logger    *core.LogFormat
 	clientset kubernetes.Interface
 	queue     workqueue.RateLimitingInterface
 	informer  cache.SharedIndexInformer
-	//TODO: handler
 }
 
 func (c *Controller) Run(stopCh <-chan struct{}) {
@@ -111,122 +109,73 @@ func (c *Controller) processNextItem() bool {
 }
 
 func (c *Controller) OnHandleK8SDeleteNoti(newEvent ControllerEvent) error {
-	taskID := core.GetTaskIDFromPodID(newEvent.key)
-	ram, cpu, taskUUID, ok := core.DeleteJobInPro(taskID)
+	return nil
+}
 
-	if ok {
-		atomic.AddInt64(&core.CPULeft, cpu)
-		atomic.AddInt64(&core.RAMLeft, ram)
-
-		// push fail update status
-		req := &model.UpdateStatusCheck{
-			Success: false,
-			TaskID:  taskID,
-		}
-
-		err := PushUpdateStatusToKafka(req) // push to kafka
-		if err != nil {
-			c.logger.Error(err.Error())
-			return nil
-		}
-
-		_, err = eddamanager.UpdateTaskLogState(taskUUID)
-		if err != nil {
-			c.logger.Error(err.Error())
-			return nil
-		}
+func (c *Controller) ExecuteFailTaskWorkflow(taskID string) {
+	e := GetExecutorTemporal()
+	param := model.UpdateTaskFailParam{
+		TaskID: taskID,
+	}
+	wo := client.StartWorkflowOptions{
+		TaskQueue: "task-queue-name",
 	}
 
-	return nil
+	res, err := e.tempCli.ExecuteWorkflow(context.Background(), wo, model.FailTasktWfName, param)
+	if err != nil {
+		c.logger.Error(err.Error())
+	}
+	c.logger.Info("Start Fail Task Workflow with run ID " + res.GetRunID())
+}
+
+func (c *Controller) ExecuteDoneTaskWorkflow(taskID string, files []string, size []int64) {
+	e := GetExecutorTemporal()
+	param := model.UpdateTaskSuccessParam{
+		TaskID:   taskID,
+		Filename: files,
+		Filesize: size,
+	}
+	wo := client.StartWorkflowOptions{
+		TaskQueue: "task-queue-name",
+	}
+
+	res, err := e.tempCli.ExecuteWorkflow(context.Background(), wo, model.DoneTasktWfName, param)
+	if err != nil {
+		c.logger.Error(err.Error())
+	}
+	c.logger.Info("Start Done Task Workflow with run ID " + res.GetRunID())
 }
 
 func (c *Controller) HandleOldK8SJob(objMeta meta_v1.ObjectMeta, podPhase string) error {
 	mainConf := core.GetMainConfig()
 	atomic.AddInt32(&core.OldTaskCounter, 1)
 
+	//taskUUID := objMeta.Labels["task-uuid"]
 	if podPhase == "Succeeded" {
 		successTask := objMeta.OwnerReferences[0].Name
-		taskUUID := objMeta.Labels["task-uuid"]
-		//AddToSuccessTask(objMeta.OwnerReferences[0].Name, objMeta.Labels["task-uuid"])
+		// get meta data like output file name and output file size
 		var names []string
 		var size []int64
-		// get meta data like output file name and output file size
 		names, size, err := core.GetAllFileSizeInDirectory(mainConf.K8SConfig.OutputDirPrefix + "/" + successTask)
 		if err != nil {
 			c.logger.Error(err.Error())
 		}
-
-		// NOTE: if K8S cluster fail to delete job automatically, change this to false
-		//core.DeleteK8SJob(context.Background(), successTask, false)
 		core.DeleteK8SJob(context.Background(), successTask, true)
 
-		// TODO: push signal to Temporal Workflow
-		req := &model.UpdateStatusCheck{
-			Success:  true,
-			TaskID:   successTask,
-			Filename: names,
-			Filesize: size,
-		}
-
-		err = PushUpdateStatusToKafka(req) // push to kafka
-		if err != nil {
-			c.logger.Error(err.Error())
-			return nil
-		}
-
-		_, err = eddamanager.UpdateTaskLogState(taskUUID)
-		if err != nil {
-			c.logger.Error(err.Error())
-			return nil
-		}
-
+		// push signal to Temporal Workflow
+		c.ExecuteDoneTaskWorkflow(successTask, names, size)
 	}
 	if podPhase == "Failed" {
-		//AddToFailTask(objMeta.OwnerReferences[0].Name, objMeta.Labels["task-uuid"])
 		failTask := objMeta.OwnerReferences[0].Name
-		taskUUID := objMeta.Labels["task-uuid"]
-
-		// NOTE: if K8S cluster fail to delete job automatically, change this to false
-		//core.DeleteK8SJob(context.Background(), successTask, false)
 		core.DeleteK8SJob(context.Background(), failTask, true)
 
 		// TODO: push signal to Temporal Workflow
-		/*
-			// handler fail
-			req := &model.UpdateStatusCheck{
-				Success: false,
-				TaskID:  failTask,
-			}
-
-
-			err := PushUpdateStatusToKafka(req) // push to kafka
-			if err != nil {
-				c.logger.Error(err.Error())
-				return nil
-			}
-		*/
-
-		_, err := eddamanager.UpdateTaskLogState(taskUUID)
-		if err != nil {
-			c.logger.Error(err.Error())
-			return nil
-		}
+		c.ExecuteFailTaskWorkflow(failTask)
 	}
+
 	if podPhase == "Running" {
 		// TODO: add to running task, calculate to start listen client
-		cpu, err := strconv.ParseInt(objMeta.Labels["cpu"], 10, 64)
-		if err != nil {
-			c.logger.Error(err.Error())
-		}
-		ram, err := strconv.ParseInt(objMeta.Labels["ram"], 10, 64)
-		if err != nil {
-			c.logger.Error(err.Error())
-		}
-		taskUUID := objMeta.Labels["task-uuid"]
-
-		core.AddJobInPro(objMeta.OwnerReferences[0].Name, ram, cpu, taskUUID)
-		atomic.AddInt64(&core.CPULeft, -cpu)
-		atomic.AddInt64(&core.RAMLeft, -ram)
+		core.IncreaseJobCount()
 	}
 	return nil
 }
@@ -248,21 +197,7 @@ func (c *Controller) OnHandleK8SUpdateNoti(newEvent ControllerEvent) error {
 	}
 
 	mainConf := core.GetMainConfig()
-	podStatus := core.GetPodStatus(obj)
-	taskUUID, _ := core.GetTaskUUIDFromJobInPro(objMeta.OwnerReferences[0].Name)
-
-	// Initital new job log reading
-	if podPhase != "Succeeded" && podPhase != "Failed" {
-		if (podStatus.ContainerStatuses != nil) && (podStatus.ContainerStatuses[0].Ready) {
-			podSpec := core.GetPodSpec(obj)
-			c.logger.Info("Sending new task log to edda agent with task id " + objMeta.OwnerReferences[0].Name)
-			_, err := eddamanager.NewTaskLog(taskUUID, objMeta.Name, mainConf.K8SConfig.K8SNameSpace, podStatus.ContainerStatuses[0].Name, podStatus.ContainerStatuses[0].ContainerID, podSpec.NodeName)
-			if err != nil {
-				c.logger.Error(err.Error())
-				return nil
-			}
-		}
-	}
+	//podStatus := core.GetPodStatus(obj)
 
 	if podPhase == "Succeeded" {
 		c.logger.Info("Job " + objMeta.Name + " is SUCCEEDED")
@@ -271,6 +206,7 @@ func (c *Controller) OnHandleK8SUpdateNoti(newEvent ControllerEvent) error {
 		for i := 0; i < len(objMeta.OwnerReferences); i++ {
 			if (objMeta.OwnerReferences[i].Kind == "Job") && !GetPod(objMeta.OwnerReferences[i].Name) {
 				SetPod(objMeta.OwnerReferences[i].Name)
+
 				var names []string
 				var size []int64
 				// get meta data like output file name and output file size
@@ -279,28 +215,10 @@ func (c *Controller) OnHandleK8SUpdateNoti(newEvent ControllerEvent) error {
 					c.logger.Error(err.Error())
 					return nil
 				}
+				core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, false)
 
-				req := &model.UpdateStatusCheck{
-					Success:  true,
-					TaskID:   objMeta.OwnerReferences[i].Name,
-					Filename: names,
-					Filesize: size,
-				}
-
-				_, ok := core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, false)
-				if ok {
-					err = PushUpdateStatusToKafka(req) // push to kafka
-					if err != nil {
-						c.logger.Error(err.Error())
-						return nil
-
-					}
-					_, err = eddamanager.UpdateTaskLogState(taskUUID)
-					if err != nil {
-						c.logger.Error(err.Error())
-						return nil
-					}
-				}
+				// push signal to Temporal Workflow
+				c.ExecuteDoneTaskWorkflow(objMeta.OwnerReferences[i].Name, names, size)
 			}
 		}
 	} else if podPhase == "Failed" {
@@ -309,26 +227,11 @@ func (c *Controller) OnHandleK8SUpdateNoti(newEvent ControllerEvent) error {
 		for i := 0; i < len(objMeta.OwnerReferences); i++ {
 			if (objMeta.OwnerReferences[i].Kind == "Job") && !GetPod(objMeta.OwnerReferences[i].Name) {
 				SetPod(objMeta.OwnerReferences[i].Name)
-				_, ok := core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, false)
-				if ok {
-					// handler fail
-					req := &model.UpdateStatusCheck{
-						Success: false,
-						TaskID:  objMeta.OwnerReferences[i].Name,
-					}
 
-					err = PushUpdateStatusToKafka(req) // push to kafka
-					if err != nil {
-						c.logger.Error(err.Error())
-						return nil
-					}
+				_ = core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, false)
 
-					_, err = eddamanager.UpdateTaskLogState(taskUUID)
-					if err != nil {
-						c.logger.Error(err.Error())
-						return nil
-					}
-				}
+				// push signal to Temporal Workflow
+				c.ExecuteFailTaskWorkflow(objMeta.OwnerReferences[i].Name)
 			}
 		}
 	}

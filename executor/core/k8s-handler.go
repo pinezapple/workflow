@@ -2,30 +2,22 @@ package core
 
 import (
 	"context"
-	"sync/atomic"
 
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func DeleteK8SJob(ctx context.Context, jobName string, doDelete bool) (err error, deleted bool) {
+func DeleteK8SJob(ctx context.Context, jobName string, doDelete bool) (err error) {
 	// manual delete
 	if doDelete {
 		err = ActualDeleteK8SJob(ctx, jobName)
 		if err != nil {
-			return err, false
+			return err
 		}
-	} else {
-		// enable if K8S cannot auto delete
-		//AddToK8SDeleteJobMap(jobName, time.Now().Add(time.Duration(GetMainConfig().K8SConfig.JobTTLAfterFinished)*time.Second))
 	}
 
-	ram, cpu, _, ok := DeleteJobInPro(jobName)
-	atomic.AddInt64(&CPULeft, cpu)
-	atomic.AddInt64(&RAMLeft, ram)
-
 	// log here
-	return nil, ok
+	return nil
 }
 
 func ActualDeleteK8SJob(ctx context.Context, jobName string) (err error) {

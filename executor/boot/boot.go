@@ -3,12 +3,13 @@ package boot
 import (
 	"context"
 
-	"workflow/workflow-utils/booting"
 	"workflow/executor/business"
 	"workflow/executor/core"
 	"workflow/executor/webserver"
+	"workflow/workflow-utils/booting"
 
 	"github.com/spf13/viper"
+	"go.temporal.io/sdk/client"
 )
 
 func Boot() {
@@ -21,26 +22,14 @@ func Boot() {
 		panic(err)
 	}
 
-	core.CPULeft = viper.GetInt64("K8S_MAX_CPU")
-	core.RAMLeft = viper.GetInt64("K8S_MAX_RAM")
-
 	mainConfig := &core.MainConfig{
-		ServiceName:            viper.GetString("SERVICE_NAME"),
-		Environment:            viper.GetString("ENVIRONMENT"),
-		LogLevel:               viper.GetString("LOG_LEVEL"),
-		SelectTaskIntervalTime: viper.GetInt64("SELECT_JOB_INTERVAL_TIME"),
-		APIRetryCount:          viper.GetInt("API_RETRY_COUNT"),
-		FailOverTime:           viper.GetInt("FAIL_OVER_TIME"),
-		MaximumConcurrentJob:   viper.GetInt("MAX_CONCURRENT_JOB"),
+		ServiceName:          viper.GetString("SERVICE_NAME"),
+		Environment:          viper.GetString("ENVIRONMENT"),
+		LogLevel:             viper.GetString("LOG_LEVEL"),
+		FailOverTime:         viper.GetInt("FAIL_OVER_TIME"),
+		MaximumConcurrentJob: viper.GetInt("MAX_CONCURRENT_JOB"),
 		HttpServerConfig: &core.HTTPServerConf{
 			Port: viper.GetInt("PORT"),
-		},
-		KafkaConfig: &core.KafkaConf{
-			ProducerBrokers: viper.GetStringSlice("PRODUCER_BROKERS"),
-			ConsumerBrokers: viper.GetStringSlice("CONSUMER_BROKERS"),
-			ConsumerTopics:  viper.GetStringSlice("CONSUMER_TOPICS"),
-			ProducerTopics:  viper.GetStringSlice("PRODUCER_TOPICS"),
-			ConsumerGroup:   viper.GetString("CONSUMER_GROUP"),
 		},
 		K8SConfig: &core.K8SConf{
 			K8SConfigFile:          viper.GetString("K8S_CONFIG_FILE"),
@@ -52,25 +41,21 @@ func Boot() {
 			NodeLabelKey:           viper.GetString("K8S_NODE_LABEL_KEY"),
 			NodeLabelValue:         viper.GetString("K8S_NODE_LABEL_VALUE"),
 		},
-		//OutterBoundHTTP config
-		SchedulerConfig: &core.OutterBoundHTTPOption{
-			Addr: viper.GetString("SCHEDULER_ADDRESS"),
-		},
-		EddaConfig: &core.OutterBoundHTTPOption{
-			Addr: viper.GetString("EDDA_ADDRESS"),
-		},
-
 		MinioEndpoint:  viper.GetString("MINIO_ENDPOINT"),
 		FUSEMountpoint: viper.GetString("FUSE_MOUNT_POINT"),
 	}
 
 	core.SetMainConfig(mainConfig)
 	core.InitCore(ctx)
+	c, err := client.NewClient(client.Options{})
+	if err != nil {
+		panic("unable to create Temporal client")
+	}
+	business.SetExecutorTemporal(c)
 
 	booting.BootstrapDaemons(ctx,
 		webserver.WebServer,
 		business.RunK8SDaemon,
-		business.ReceiveMessageFromKafka,
-		business.SelectTaskDaemons,
+		business.RunTemporalDaemon,
 	)
 }

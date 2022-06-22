@@ -29,6 +29,7 @@ type ExecuteTaskParam struct {
 
 type ExecuteTaskResult struct {
 	TimeStamp time.Time
+	Created   bool
 	// maybe add executor name
 }
 

@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"workflow/workflow-utils/model"
 	"workflow/executor/core"
+	"workflow/workflow-utils/model"
+
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -20,9 +21,49 @@ type ExecutorTemporal struct {
 	lg      *core.LogFormat
 }
 
+var executorTemp *ExecutorTemporal
+
+func RunTemporalDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
+	lg := core.GetLogger()
+	lg.Info("Starting Temporal daemon")
+
+	mainConf := core.GetMainConfig()
+	sleepContext(parentCtx, time.Duration(mainConf.FailOverTime)*time.Second)
+	if !core.GetSyncFlag() {
+		core.SetSyncFlag()
+	}
+
+	if executorTemp.tempCli == nil {
+		c, err := client.NewClient(client.Options{})
+		if err != nil {
+			lg.Fatalf("unable to create Temporal client", err)
+		}
+		executorTemp.tempCli = c
+	}
+	executorTemp.lg = lg
+	err = executorTemp.RegisterWorker()
+	if err != nil {
+		lg.Fatalf("unable to create Temporal client", err)
+	}
+
+	fn = func() {
+		<-parentCtx.Done()
+		executorTemp.worker.Stop()
+		executorTemp.tempCli.Close()
+
+		lg.Info("Shutting down Temporal daemon")
+	}
+
+	return fn, nil
+}
+
+func GetExecutorTemporal() *ExecutorTemporal {
+	return executorTemp
+}
+
 // Service implementation
-func CreateExecutorTemporal(cli client.Client) *ExecutorTemporal {
-	return &ExecutorTemporal{
+func SetExecutorTemporal(cli client.Client) {
+	executorTemp = &ExecutorTemporal{
 		tempCli: cli,
 	}
 }
@@ -88,18 +129,30 @@ func (e *ExecutorTemporal) FailTasktWf(ctx workflow.Context, param model.UpdateT
 // TODO: add workflow def name and run id
 func (e *ExecutorTemporal) ExecuteTaskAct(ctx context.Context, param model.ExecuteTaskParam) (res model.ExecuteTaskResult, err error) {
 	// check for tasks threshold
+	mainConf := core.GetMainConfig()
+	for {
+		if core.IsGoodToGo(mainConf.MaximumConcurrentJob) {
+			break
+		}
+	}
+
 	// add log here
 	err = CreateK8SJob(ctx, &param.Task, e.lg, "", "")
 	if err != nil {
-		return model.ExecuteTaskResult{}, err
+		core.DecreaseJobCount()
+		return model.ExecuteTaskResult{
+			TimeStamp: time.Now(),
+			Created:   false,
+		}, nil
 	}
 	res = model.ExecuteTaskResult{
 		TimeStamp: time.Now(),
+		Created:   true,
 	}
 	return res, nil
 }
 
 func (e *ExecutorTemporal) DeleteTaskAct(ctx context.Context, taskID string) (err error) {
-	err, _ = core.DeleteK8SJob(context.Background(), taskID, true)
+	err = core.DeleteK8SJob(context.Background(), taskID, true)
 	return err
 }
