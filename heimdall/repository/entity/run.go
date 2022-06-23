@@ -37,7 +37,6 @@ type TaskEntity struct {
 	ProjectID   uuid.UUID `gorm:"type:uuid"`
 	ProjectPath string    `json:"project_path" gorm:"Column:project_path;"`
 
-	StepID   string `json:"step_id" gorm:"column:step_id"`
 	StepName string
 
 	RunID    uuid.UUID `json:"run_id" gorm:"column:run_id"`
@@ -65,7 +64,7 @@ type TaskEntity struct {
 	Logs        []byte         `gorm:"type:jsonb"`
 
 	State            string
-	ParentsDoneCount uint32 `json:"parent_done_count" gorm:"column:parent_done_count"`
+	ParentsDoneCount int `json:"parent_done_count" gorm:"column:parent_done_count"`
 
 	StartedTime time.Time // start time in executor
 	EndTime     time.Time // end time in executor

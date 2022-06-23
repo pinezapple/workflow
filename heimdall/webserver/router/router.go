@@ -77,8 +77,6 @@ func NewRouter() (router *gin.Engine) {
 		runs.GET("/:run_id", controllers.HandleGETRun)
 		runs.GET("/:run_id/status", controllers.HandleGETRunStatus)
 		runs.POST("", controllers.HandlePOSTRun)
-		// runs.PUT("/:run_id", controllers.HandlePUTRuns)
-		// runs.POST("/:run_id/cancel", controllers.HandlePOSTCancelRunByID)
 	}
 
 	// Task handlers
@@ -87,7 +85,6 @@ func NewRouter() (router *gin.Engine) {
 		tasks.GET("", controllers.HandleGETTasks)
 		tasks.GET("/:task_id", controllers.HandleGETTask)
 		tasks.POST("", controllers.HandlePOSTTask)
-		// tasks.POST("/:id/cancel", controllers.HandlePOSTCancelTaskByID)
 	}
 
 	// Project handlers
@@ -103,15 +100,6 @@ func NewRouter() (router *gin.Engine) {
 		projects.POST("/:project_id/folders", controllers.HandlePOSTFolder)
 		projects.PUT("/:project_id/folders", controllers.HandlePUTFolder)
 		projects.DELETE("/:project_id/folders/:folder_id", controllers.HandleDELETEFolder)
-	}
-
-	// Task updater
-	taskUpdate := router.Group("/internal/tasks")
-	taskUpdaterCtrl := new(controllers.TaskUpdater)
-	{
-		taskUpdate.POST("/status", taskUpdaterCtrl.UpdateTaskStatus)
-		taskUpdate.POST("/params", taskUpdaterCtrl.UpdateParamWithRegexAndFileSize)
-		taskUpdate.POST("/output", taskUpdaterCtrl.UpdateTaskOutputLocation)
 	}
 
 	return router

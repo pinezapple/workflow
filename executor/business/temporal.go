@@ -9,6 +9,7 @@ import (
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 )
@@ -21,7 +22,7 @@ type ExecutorTemporal struct {
 	lg      *core.LogFormat
 }
 
-var executorTemp *ExecutorTemporal
+var executorTemp = &ExecutorTemporal{}
 
 func RunTemporalDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
 	lg := core.GetLogger()
@@ -71,10 +72,11 @@ func SetExecutorTemporal(cli client.Client) {
 func (e *ExecutorTemporal) RegisterWorker() (err error) {
 	// TODO: fix this after you have config
 	workerOptions := worker.Options{
-		MaxConcurrentWorkflowTaskExecutionSize: 1000,
+		MaxConcurrentActivityExecutionSize: 1,
 	}
+
 	// TODO: add task queue name
-	e.worker = worker.New(e.tempCli, "your_task_queue_name", workerOptions)
+	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
 
 	// register workflow
 	e.worker.RegisterWorkflowWithOptions(e.DoneTasktWf, workflow.RegisterOptions{Name: model.DoneTasktWfName})
@@ -98,6 +100,20 @@ func (e *ExecutorTemporal) DoneTasktWf(ctx workflow.Context, param model.UpdateT
 
 	var res = model.UpdateTaskSuccessResult{}
 	e.lg.Info("[DoneTaskWf] Execute update task success activity")
+
+	retrypolicy := &temporal.RetryPolicy{
+		InitialInterval:    time.Second,
+		BackoffCoefficient: 2.0,
+		MaximumInterval:    time.Minute,
+		MaximumAttempts:    500,
+	}
+	options := workflow.ActivityOptions{
+		TaskQueue:           model.BifrostQueueName,
+		StartToCloseTimeout: time.Minute,
+		RetryPolicy:         retrypolicy,
+	}
+	ctx = workflow.WithActivityOptions(ctx, options)
+
 	future := workflow.ExecuteActivity(ctx, model.UpdateTaskSuccessActName, param)
 	if err = future.Get(ctx, &res); err != nil {
 		e.lg.Error(err.Error())
@@ -117,6 +133,19 @@ func (e *ExecutorTemporal) DoneTasktWf(ctx workflow.Context, param model.UpdateT
 }
 
 func (e *ExecutorTemporal) FailTasktWf(ctx workflow.Context, param model.UpdateTaskSuccessParam) (err error) {
+	retrypolicy := &temporal.RetryPolicy{
+		InitialInterval:    time.Second,
+		BackoffCoefficient: 2.0,
+		MaximumInterval:    time.Minute,
+		MaximumAttempts:    500,
+	}
+	options := workflow.ActivityOptions{
+		TaskQueue:           model.BifrostQueueName,
+		StartToCloseTimeout: time.Minute,
+		RetryPolicy:         retrypolicy,
+	}
+	ctx = workflow.WithActivityOptions(ctx, options)
+
 	future := workflow.ExecuteActivity(ctx, model.UpdateTaskFailActName, param)
 	if err = future.Get(ctx, nil); err != nil {
 		e.lg.Error(err.Error())

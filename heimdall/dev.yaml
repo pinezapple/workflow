@@ -1,8 +1,8 @@
 database:
     host: "127.0.0.1"
     port: "5432"
-    user: "workflowuser"
-    password: "123456"
+    user: "lucas"
+    password: "123"
     dbname: "workflowdb"
 
 server:
@@ -10,28 +10,8 @@ server:
     port: "8084"
     shutdowntimeout: "5"
     loglevel: "debug"
-    environment: "development" #, production
-    jwks_url: "https://genome.vinbigdata.org/user/.well-known/jwks"
-    audiences: 
-        - user
-        - openid
-    issuers:
-        - https://genome.vinbigdata.org/user
-    purpose: access
-
-    
-scheduler:
-    host: "http://54.179.57.192"
-    port: "10001"
+    environment: "production"
 
 valkyrie:
-    host:  "https://stg-genome.vinbigdata.org/valkyrie" # Should be able to access from the client side
+    host:  "127.0.0.1" # Should be able to access from the client side
     port:  ""
-
-arborist:
-    host: "https://genome.vinbigdata.org/authz"
-
-mailservice:
-    address:            "http://mailservice"   
-    accountID:          8
-    notifyTemplateID:   69

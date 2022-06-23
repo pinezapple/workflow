@@ -5,6 +5,7 @@ import (
 	"flag"
 
 	"workflow/heimdall/core"
+	"workflow/heimdall/services"
 	"workflow/heimdall/webserver"
 	"workflow/workflow-utils/booting"
 )
@@ -18,5 +19,5 @@ func Boot() {
 	flag.Parse()
 	core.ReadConfig(*fileConfig)
 
-	booting.BootstrapDaemons(context.Background(), webserver.WebServer)
+	booting.BootstrapDaemons(context.Background(), services.RunTemporalDaemon, webserver.WebServer)
 }

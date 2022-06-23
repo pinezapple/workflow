@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrTaskFailed = fmt.Errorf("Task failed")
+	ErrTaskDone   = fmt.Errorf("Task done")
 )
 
 func GetFileName(path []string) (files []string) {

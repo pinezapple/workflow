@@ -9,6 +9,7 @@ import (
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 
@@ -24,6 +25,7 @@ const ()
 type HeimdallTemporal struct {
 	tempCli client.Client
 	worker  worker.Worker
+	lg      *core.Logger
 }
 
 type ExecuteTaskParam struct {
@@ -40,6 +42,47 @@ type UpdateTaskStartTimeParam struct {
 	TimeStamp time.Time
 }
 
+var heimdallTemp = &HeimdallTemporal{}
+
+func RunTemporalDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
+	lg := core.GetLogger()
+	lg.Info("Starting Temporal daemon")
+
+	c, err := client.NewClient(client.Options{})
+	if err != nil {
+		lg.Fatalf("unable to create Temporal client", err)
+	}
+	heimdallTemp.tempCli = c
+
+	heimdallTemp.lg = core.GetLogger()
+
+	err = heimdallTemp.RegisterWorker()
+	if err != nil {
+		lg.Fatalf("unable to create Temporal client", err)
+	}
+
+	fn = func() {
+		<-parentCtx.Done()
+		heimdallTemp.worker.Stop()
+		heimdallTemp.tempCli.Close()
+
+		lg.Info("Shutting down Temporal daemon")
+	}
+
+	return fn, nil
+}
+
+func GetHeimdallTemporal() *HeimdallTemporal {
+	return heimdallTemp
+}
+
+// Service implementation
+func SetHeimdallTemporal(cli client.Client) {
+	heimdallTemp = &HeimdallTemporal{
+		tempCli: cli,
+	}
+}
+
 // Service implementation
 func CreateHeimdallTemporal(cli client.Client) *HeimdallTemporal {
 	return &HeimdallTemporal{
@@ -53,7 +96,7 @@ func (e *HeimdallTemporal) RegisterWorker() (err error) {
 		MaxConcurrentWorkflowTaskExecutionSize: 1000,
 	}
 	// TODO: add task queue name
-	e.worker = worker.New(e.tempCli, "your_task_queue_name", workerOptions)
+	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
 
 	// register workflow
 	e.worker.RegisterWorkflowWithOptions(e.ExecuteTaskWf, workflow.RegisterOptions{Name: model.ExecuteTaskWfName})
@@ -64,6 +107,7 @@ func (e *HeimdallTemporal) RegisterWorker() (err error) {
 	e.worker.RegisterActivityWithOptions(e.UpdateTaskFailAct, activity.RegisterOptions{Name: model.UpdateTaskFailActName})
 
 	// TODO: add LOGGGG
+	e.lg.Info("Starting Temporal workers")
 	if err := e.worker.Start(); err != nil {
 		return err
 	}
@@ -71,21 +115,31 @@ func (e *HeimdallTemporal) RegisterWorker() (err error) {
 }
 
 func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTaskParam) (err error) {
-	log := workflow.GetLogger(ctx)
-
 	// STEP 1: update task status to inqueue
 	updateStatusParam := UpdateTaskStatusParam{
 		TaskID: param.Task.TaskID,
 		Status: core.StateQueued,
 	}
+
+	retrypolicy := &temporal.RetryPolicy{
+		InitialInterval:    time.Second,
+		BackoffCoefficient: 2.0,
+		MaximumInterval:    time.Minute,
+		MaximumAttempts:    500,
+	}
+	options := workflow.ActivityOptions{
+		TaskQueue:           model.BifrostQueueName,
+		StartToCloseTimeout: time.Minute,
+		RetryPolicy:         retrypolicy,
+	}
+	ctx = workflow.WithActivityOptions(ctx, options)
+
 	future := workflow.ExecuteActivity(ctx, model.UpdateTaskStatusActName, updateStatusParam)
 	if err = future.Get(ctx, nil); err != nil {
-		if err == utils.ErrTaskFailed {
-			return nil
-		}
-		log.Error(err.Error())
+		u.lg.Error(err.Error())
 		return
 	}
+	u.lg.Info("update task " + param.Task.TaskID + " status to inqueue")
 
 	// STEP 2: execute task on Executor
 	taskDTO, err := transformToTaskDTO(param.Task)
@@ -98,25 +152,27 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 	var resp = model.ExecuteTaskResult{}
 	future = workflow.ExecuteActivity(ctx, model.ExecuteTaskActName, req)
 	if err = future.Get(ctx, &resp); err != nil {
-		// if fail to execute job on k8s, fail this run
-		future = workflow.ExecuteActivity(ctx, model.UpdateTaskFailActName, model.UpdateTaskFailParam{TaskID: param.Task.TaskID})
-		if err = future.Get(ctx, nil); err != nil {
-			if err == utils.ErrTaskFailed {
-				return nil
-			}
-			log.Error(err.Error())
-			return
-		}
-
-		log.Error(err.Error())
+		u.lg.Error(err.Error())
 		return
 	}
+	u.lg.Info("update task " + param.Task.TaskID + " status to running")
 
-	// STEP 3: update task start time
-	future = workflow.ExecuteActivity(ctx, model.UpdateTaskStartTimeActName, UpdateTaskStartTimeParam{TaskID: param.Task.TaskID, TimeStamp: resp.TimeStamp})
-	if err = future.Get(ctx, nil); err != nil {
-		log.Error(err.Error())
-		return
+	// if fail to execute job on k8s, fail this run
+	if !resp.Created {
+		future = workflow.ExecuteActivity(ctx, model.UpdateTaskFailActName, model.UpdateTaskFailParam{TaskID: param.Task.TaskID})
+		if err = future.Get(ctx, nil); err != nil {
+			u.lg.Error(err.Error())
+			return
+		}
+		u.lg.Info("update task " + param.Task.TaskID + " status to failed")
+	} else {
+		// STEP 3: update task start time
+		future = workflow.ExecuteActivity(ctx, model.UpdateTaskStartTimeActName, UpdateTaskStartTimeParam{TaskID: param.Task.TaskID, TimeStamp: resp.TimeStamp})
+		if err = future.Get(ctx, nil); err != nil {
+			u.lg.Error(err.Error())
+			return
+		}
+		u.lg.Info("update task " + param.Task.TaskID + " status to success")
 	}
 
 	return nil
@@ -138,6 +194,7 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 	var outputFileSize, fileSizeToSave []int64
 
 	// STEP 1: Update output location + status + children task to db
+	u.lg.Info("get output file of task " + param.TaskID)
 	filenames := utils.GetFileName(param.Filename)
 	if len(param.Filename) != 0 {
 		_, outputFileName, filePathToSave, fileNameToSave, fileSizeToSave, outputFileSize = extractFilesToSave(&entity.TaskEntity{}, param.Filename, filenames, param.Filesize)
@@ -145,6 +202,9 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 
 	err = taskDAO.UpdateDoneTask(ctx, param.TaskID, outputFileName, outputFileSize, param.Filename, filenames, param.Filesize)
 	if err != nil {
+		if err == utils.ErrTaskDone {
+			return model.UpdateTaskSuccessResult{}, nil
+		}
 		return model.UpdateTaskSuccessResult{}, err
 	}
 
@@ -154,10 +214,12 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 		return model.UpdateTaskSuccessResult{}, err
 	}
 
-	wo := client.StartWorkflowOptions{
-		TaskQueue: "task-queue-name",
-	}
 	for i := 0; i < len(childtask); i++ {
+		wo := client.StartWorkflowOptions{
+			ID:        childtask[i].TaskID + "-" + model.ExecuteTaskWfName,
+			TaskQueue: model.BifrostQueueName,
+		}
+
 		res, err := u.tempCli.ExecuteWorkflow(ctx, wo, model.ExecuteTaskWfName, ExecuteTaskParam{Task: childtask[i]})
 		if err != nil {
 			//log.Err(err).Msg("[Wel logic internal] Unable to call GrantRoleWorkflow")
@@ -167,6 +229,7 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 			//log.Err(err).Msg("[Wel logic internal] GrantRoleWorkflow failed")
 		}
 
+		u.lg.Info("initiate new ExecuteTaskwf for task " + childtask[i].TaskID)
 		//log.Info().Str("Workflow", we.GetID()).Str("runID=", we.GetRunID()).Msg("dispatched")
 	}
 
@@ -189,6 +252,8 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 		Filesize:    fileSizeToSave,
 	}
 
+	u.lg.Info("return files to save for task " + param.TaskID)
+
 	return res, nil
 }
 
@@ -198,6 +263,7 @@ func (u *HeimdallTemporal) GetTaskByTaskIDAct(ctx context.Context, taskID string
 }
 
 func (u *HeimdallTemporal) UpdateTaskFailAct(ctx context.Context, param model.UpdateTaskFailParam) (err error) {
+	u.lg.Info("Update fail task " + param.TaskID)
 	taskDAO := repository.GetTaskDAO()
 	err = taskDAO.UpdateFailTask(ctx, param.TaskID)
 

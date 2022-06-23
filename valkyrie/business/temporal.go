@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"workflow/valkyrie/core"
 	"workflow/valkyrie/dao"
 	valModel "workflow/valkyrie/model"
 	"workflow/workflow-utils/model"
+
+	"github.com/google/uuid"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -19,7 +20,48 @@ const ()
 type ValkyrieTemporal struct {
 	tempCli client.Client
 	worker  worker.Worker
-	//lg      *core.LogFormat
+	lg      *core.Logger
+}
+
+var valkyrieTemp = &ValkyrieTemporal{}
+
+func RunTemporalDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
+	lg := core.GetLogger()
+	lg.Info("Starting Temporal daemon")
+
+	c, err := client.NewClient(client.Options{})
+	if err != nil {
+		lg.Fatalf("unable to create Temporal client", err)
+	}
+	valkyrieTemp.tempCli = c
+
+	valkyrieTemp.lg = core.GetLogger()
+
+	err = valkyrieTemp.RegisterWorker()
+	if err != nil {
+		lg.Fatalf("unable to create Temporal client", err)
+	}
+
+	fn = func() {
+		<-parentCtx.Done()
+		valkyrieTemp.worker.Stop()
+		valkyrieTemp.tempCli.Close()
+
+		lg.Info("Shutting down Temporal daemon")
+	}
+
+	return fn, nil
+}
+
+func GetValkyrieTemporal() *ValkyrieTemporal {
+	return valkyrieTemp
+}
+
+// Service implementation
+func SetHeimdallTemporal(cli client.Client) {
+	valkyrieTemp = &ValkyrieTemporal{
+		tempCli: cli,
+	}
 }
 
 // Service implementation
@@ -31,11 +73,9 @@ func CreateValkyrieTemporal(cli client.Client) *ValkyrieTemporal {
 
 func (e *ValkyrieTemporal) RegisterWorker() (err error) {
 	// TODO: fix this after you have config
-	workerOptions := worker.Options{
-		MaxConcurrentWorkflowTaskExecutionSize: 1000,
-	}
+	workerOptions := worker.Options{}
 	// TODO: add task queue name
-	e.worker = worker.New(e.tempCli, "your_task_queue_name", workerOptions)
+	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
 
 	// register activity
 	e.worker.RegisterActivityWithOptions(e.SaveGeneratedFileAct, activity.RegisterOptions{Name: model.SaveGeneratedFileActName})

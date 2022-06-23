@@ -29,7 +29,7 @@ ENV DST=/home/biodocker/bin
 ENV ULOCAL=/usr/local/bin
 
 RUN apt-get update && apt-get install -y openjdk-8-jre-headless && \
-    wget $URL/$ZIP -O $DST/$ZIP && \
+    wget --no-check-certificate $URL/$ZIP -O $DST/$ZIP && \
     unzip $DST/$ZIP -d $DST && \
     rm $DST/$ZIP && \
     mv $DST/$FOLDER/* $DST && \

@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"workflow/heimdall/core"
@@ -10,9 +9,11 @@ import (
 	"workflow/heimdall/repository/entity"
 	"workflow/heimdall/services/dto"
 	"workflow/heimdall/webserver/forms"
+	"workflow/workflow-utils/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.temporal.io/sdk/client"
 )
 
 // RunService interface
@@ -42,108 +43,9 @@ func (service runServiceImpl) GetRuns(ctx *gin.Context, pageSize, pageToken int,
 	return
 }
 
-func (service runServiceImpl) CreateRunWorkflow(ctx *gin.Context, runForm *forms.WorkflowRunForm) (runDto forms.RunDto, err error) {
-	dbDAO := repository.GetDAO()
-	// FIXME temporary use WorkflowURL as Workflow UUID to select from db
-	id, err := uuid.Parse(runForm.WorkflowURL)
-	if err != nil {
-		logger.Errorf("Convert workflow id failed: %s", runForm.WorkflowURL)
-		return
-	}
-
-	workflow, err := dbDAO.GetWorkflow(ctx, id)
-	if err != nil {
-		logger.Errorf("Retrive workflow from db error: %s", err.Error())
-		return
-	}
-
-	request := make(map[string]interface{})
-	request["workflow_params"] = runForm.WorkflowParams
-	request["workflow_type"] = runForm.WorkflowType
-	request["workflow_type_version"] = runForm.WorkflowTypeVersion
-	request["tags"] = runForm.Tags
-	request["workflow_engine_parameters"] = runForm.WorkflowEngineParameters
-	request["workflow_url"] = runForm.WorkflowURL
-	request["workflow_attachments"] = runForm.WorkflowAttachments
-
-	runRequest, err := json.Marshal(request)
-	if err != nil {
-		return
-	}
-	runEntity := &entity.RunEntity{
-		ID: uuid.New(),
-		// Description string
-		// Tags       []byte `gorm:"type:jsonb"`
-		Request:     runRequest,
-		WorkflowID:  workflow.ID,
-		UserName:    "tungnt99",
-		State:       core.StateUnknown,
-		ProjectID:   workflow.ProjectID,
-		ProjectPath: "/", // TODO: HARD CODE FIX
-	}
-
-	// A run is should be created before sending it to the scheduler
-	// because the scheduler will update the task status right after
-	// it receives a new run.
-	if err = dbDAO.CreateRun(ctx, runEntity); err != nil {
-		return
-	}
-
-	var steps []*dto.WorkflowStep
-	for _, step := range workflow.Steps {
-		workflowStep := &dto.WorkflowStep{
-			Name:    step.Name,
-			Content: step.Content,
-		}
-		steps = append(steps, workflowStep)
-	}
-
-	tfReq := dto.TransformRequest{
-		RunIndex: runEntity.RunIndex,
-		UserName: "tungnt99",
-		Name:     workflow.Name,
-		Content:  workflow.Content,
-		Params:   runForm.WorkflowParams,
-		Steps:    steps,
-	}
-
-	//logger.Infof("Transform request: %v", tfReq)
-
-	tfRes, err := GetTransformerService().Transform(ctx, tfReq)
-	if err != nil {
-		_ = dbDAO.DeleteRun(ctx, runEntity)
-		return
-	}
-
-	// updateRunEntity add tasks into the runentity
-	if err = updateRunEntity(ctx, runEntity, tfRes, false); err != nil {
-		return
-	}
-
-	runDto, err = convertRunEntity2Dto(runEntity)
-	if err != nil {
-		logger.Errorf("Convert to run dto error: %s", err.Error())
-		return
-	}
-
-	// add run metadata
-	tfRes.Data.WorkflowID = workflow.ID
-	tfRes.Data.ProjectID = runEntity.ProjectID
-	tfRes.Data.ProjectPath = runEntity.ProjectPath
-
-	// update the run with the transformed data
-	err = dbDAO.UpdateRun(ctx, runEntity)
-	if err != nil {
-		return
-	}
-
-	// TODO: start to init workflow starting jobs here
-
-	return runDto, nil
-}
-
 func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.WorkflowRunForm) (runDto forms.RunDto, err error) {
 	dbDAO := repository.GetDAO()
+	taskDAO := repository.GetTaskDAO()
 	// FIXME temporary use WorkflowURL as Workflow UUID to select from db
 	id, err := uuid.Parse(runForm.WorkflowURL)
 	if err != nil {
@@ -171,9 +73,7 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 		return
 	}
 	runEntity := &entity.RunEntity{
-		ID: uuid.New(),
-		// Description string
-		// Tags       []byte `gorm:"type:jsonb"`
+		ID:          uuid.New(),
 		Request:     runRequest,
 		WorkflowID:  workflow.ID,
 		UserName:    "tungnt99",
@@ -182,9 +82,6 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 		ProjectPath: "/", // TODO: HARD CODE FIX
 	}
 
-	// A run is should be created before sending it to the scheduler
-	// because the scheduler will update the task status right after
-	// it receives a new run.
 	if err = dbDAO.CreateRun(ctx, runEntity); err != nil {
 		return
 	}
@@ -214,48 +111,52 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 		_ = dbDAO.DeleteRun(ctx, runEntity)
 		return
 	}
-	// TODO OOOOOOOO: create task from here
 
 	// updateRunEntity add tasks into the runentity
 	if err = updateRunEntity(ctx, runEntity, tfRes, false); err != nil {
 		return
 	}
 
-	runDto, err = convertRunEntity2Dto(runEntity)
-	if err != nil {
-		logger.Errorf("Convert to run dto error: %s", err.Error())
-		return
-	}
-
-	if err != nil {
-		logger.Errorf("Get workflow %s error: %s", runEntity.WorkflowID, err.Error())
-		return
-	}
-
-	// add run metadata
-	tfRes.Data.WorkflowID = workflow.ID
-	tfRes.Data.ProjectID = runEntity.ProjectID
-	tfRes.Data.ProjectPath = runEntity.ProjectPath
-
-	// add task metadata
-	var idUUID = make(map[string]uuid.UUID)
-	for taskIndex := range runEntity.Tasks {
-		idUUID[runEntity.Tasks[taskIndex].TaskID] = runEntity.Tasks[taskIndex].ID
-	}
-	for taskIndex := range tfRes.Data.Tasks {
-		id, ok := idUUID[tfRes.Data.Tasks[taskIndex].TaskID]
-		if !ok {
-			return runDto, fmt.Errorf("Can not find task ID in runEntity: %s", tfRes.Data.Tasks[taskIndex].TaskID)
-		}
-		tfRes.Data.Tasks[taskIndex].ID = id
-		tfRes.Data.Tasks[taskIndex].RunID = runEntity.ID
-		tfRes.Data.Tasks[taskIndex].ProjectID = runEntity.ProjectID
-		tfRes.Data.Tasks[taskIndex].ProjectPath = runEntity.ProjectPath
-	}
-
 	// update the run with the transformed data
 	err = dbDAO.UpdateRun(ctx, runEntity)
 	if err != nil {
+		return
+	}
+
+	// Get first task
+	var firstTask entity.TaskEntity
+	for i := 0; i < len(runEntity.Tasks); i++ {
+		if runEntity.Tasks[i].ParentsDoneCount == 0 && runEntity.Tasks[i].IsBoundary {
+			firstTask = runEntity.Tasks[i]
+			break
+		}
+	}
+	childTask, err := taskDAO.GetChildrenTaskByTaskID(ctx, firstTask.TaskID)
+	if err != nil {
+		logger.Errorf("init first tasks error: %s", err.Error())
+		return
+	}
+
+	heimdallTemp := GetHeimdallTemporal()
+	// Start to execute task
+	for i := 0; i < len(childTask); i++ {
+		wo := client.StartWorkflowOptions{
+			ID:        childTask[i].TaskID + "-" + model.ExecuteTaskWfName,
+			TaskQueue: model.BifrostQueueName,
+		}
+		res, err := heimdallTemp.tempCli.ExecuteWorkflow(ctx, wo, model.ExecuteTaskWfName, ExecuteTaskParam{Task: childTask[i]})
+		if err != nil {
+			logger.Errorf("create execute workflow error: %s", err.Error())
+			return runDto, err
+		}
+		if err := res.Get(ctx, nil); err != nil {
+			logger.Errorf("create execute workflow error: %s", err.Error())
+		}
+	}
+
+	runDto, err = convertRunEntity2Dto(runEntity)
+	if err != nil {
+		logger.Errorf("Convert to run dto error: %s", err.Error())
 		return
 	}
 
@@ -305,16 +206,19 @@ func updateRunEntity(ctx *gin.Context, runEntity *entity.RunEntity, tfRes dto.Tr
 		}
 
 		taskEntity := entity.TaskEntity{
-			ID:          uuid.New(),
-			TaskID:      task.TaskID,
-			RunID:       runEntity.ID,
-			RunIndex:    runEntity.RunIndex,
+			ID:     uuid.New(),
+			TaskID: task.TaskID,
+
 			ProjectID:   runEntity.ProjectID,
 			ProjectPath: runEntity.ProjectPath,
-			// Name:
+
+			StepName: task.StepName,
+
+			RunID:    runEntity.ID,
+			RunIndex: runEntity.RunIndex,
+
 			// Description
 			IsBoundary: task.IsBoundary,
-			StepName:   task.StepName,
 			UserName:   "tungnt99",
 			Command:    cmds,
 			// Inputs
@@ -329,8 +233,9 @@ func updateRunEntity(ctx *gin.Context, runEntity *entity.RunEntity, tfRes dto.Tr
 			ParentTasksID:   task.ParentTasksID,
 			ChildrenTasksID: task.ChildrenTasksID,
 			OutputLocation:  task.OutputLocation,
-			State:           core.StateUnknown,
-			// State:           task.State,
+
+			ParentsDoneCount: len(task.ParentTasksID),
+			State:            core.StateUnknown,
 			// StartedTime
 			// EndTime
 		}

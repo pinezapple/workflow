@@ -5,9 +5,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"workflow/heimdall/core"
 	"workflow/heimdall/repository/entity"
+
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm/clause"
 
@@ -278,7 +279,6 @@ func (c *gormHeimdall) GetProjectsFromAuth(ctx context.Context, pageSize int, pa
 	)
 
 	err := gDB.WithContext(ctx).Model(&entity.ProjectEntity{}).
-		Where("project_entities.auth_resource_path IN ?", authPath).
 		Omit(clause.Associations).
 		Order("id ASC").
 		Offset(offset).Limit(pageSize).
@@ -293,8 +293,6 @@ func (c *gormHeimdall) GetProjectsFromAuth(ctx context.Context, pageSize int, pa
 
 func (c *gormHeimdall) GetAllProjectsFromAuth(ctx context.Context, authPaths []string) (projects []entity.ProjectEntity, err error) {
 	err = gDB.WithContext(ctx).Model(&entity.ProjectEntity{}).
-		Where("project_entities.auth_resource_path ? " +
-			entity.AuthPathArrayToLtree(authPaths)).
 		Preload(clause.Associations).
 		Find(&projects).Error
 	if err != nil {
