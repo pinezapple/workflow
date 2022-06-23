@@ -91,7 +91,7 @@ func convertTaskForm2Entity(ctx *gin.Context, taskForm *forms.TaskFormDto, gener
 	taskEntity := &entity.TaskEntity{
 		Name:        taskForm.Name,
 		Description: taskForm.Description,
-		UserName:    fmt.Sprintf("%v", ctx.Value("UserName")),
+		UserName:    "tungnt99",
 		Command:     taskForm.Executors[0].Command,
 	}
 

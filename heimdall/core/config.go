@@ -2,23 +2,12 @@ package core
 
 import (
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/spf13/viper"
 
 	"workflow/heimdall/utils"
 )
-
-// KafkaConfig contains configs for Apache Kafka Client
-type KafkaConfig struct {
-	Version         string   `mapstructure:"version"`
-	ProducerBrokers []string `mapstructure:"producerbrokers"`
-	ConsumerBrokers []string `mapstructure:"consumerbrokers"`
-	ProducerTopics  []string `mapstructure:"producertopics"`
-	ConsumerTopics  []string `mapstructure:"consumertopics"`
-	ConsumerGroup   string   `mapstructure:"consumergroup"`
-}
 
 // DbConfig database config
 type DbConfig struct {
@@ -36,33 +25,6 @@ type ServerConfig struct {
 	ShutdownTimeout string `mapstructure:"shutdowntimeout"`
 	Environment     string `mapstructure:"environment"`
 	LogLevel        string `mapstructure:"loglevel"`
-
-	JWKSUrl   string   `mapstructure:"jwks_url"`
-	Audiences []string `mapstructure:"audiences"`
-	Issuers   []string `mapstructure:"issuers"`
-	Purpose   string   `mapstructure:"purpose"`
-}
-
-// SchedulerConfig scheduler config
-type SchedulerConfig struct {
-	Host string `mapstructure:"host"`
-	Port string `mapstructure:"port"`
-}
-
-// TransformerConfig config
-type TransformerConfig struct {
-	Host string `mapstructure:"host"`
-	Port string `mapstructure:"port"`
-}
-
-type ArboristConfig struct {
-	Host string `mapstructure:"host"`
-}
-
-type MailServiceConfig struct {
-	Address        string `mapstructure:"address"`
-	AccountID      int    `mapstructure:"accountID"`
-	NotifyTemplate int    `mapstructure:"notifyTemplateID"`
 }
 
 type ValkyrieConfig struct {
@@ -72,14 +34,9 @@ type ValkyrieConfig struct {
 
 // MainConfig contains all system configs
 type MainConfig struct {
-	DB          *DbConfig          `mapstructure:"database"`
-	Server      *ServerConfig      `mapstructure:"server"`
-	Scheduler   *SchedulerConfig   `mapstructure:"scheduler"`
-	Kafka       *KafkaConfig       `mapstructure:"kafka"`
-	Transformer *TransformerConfig `mapstructure:"transformer"`
-	Valkyrie    *ValkyrieConfig    `mapstructure:"valkyrie"`
-	Arborist    *ArboristConfig    `mapstructure:"arborist"`
-	MailService *MailServiceConfig `mapstructure:"mailservice"`
+	DB       *DbConfig       `mapstructure:"database"`
+	Server   *ServerConfig   `mapstructure:"server"`
+	Valkyrie *ValkyrieConfig `mapstructure:"valkyrie"`
 }
 
 var (
@@ -99,10 +56,6 @@ func ReadConfig(configFile string) {
 	if err := getConfigFromFile(fileName, fileType, filePath); err != nil {
 		log.Fatalln("---- Can not get config from file, error: ", err)
 		return
-	}
-
-	if err := getConfigFromOSEnv(); err != nil {
-		log.Fatalln("---- Can not get config from env, error: ", err)
 	}
 
 	utils.PrintJSONFormat("Start with config", m)
@@ -135,35 +88,6 @@ func getConfigFromFile(fileName string, fileType string, filePath string) (err e
 
 	if err := v.Unmarshal(m); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-// -----------------------------------------------------------------------------
-// ------------------------------- GET FROM OS ENV -----------------------------
-
-// getConfigFromOSEnv replace config in file with config in os env. If os env
-// not exist, keep the config in file
-func getConfigFromOSEnv() (err error) {
-	//host replace
-	host := os.Getenv("HOST")
-	port := os.Getenv("PORT")
-	if !utils.IsStringEmpty(host) {
-		m.Server.Host = host
-	}
-	if !utils.IsStringEmpty(port) {
-		m.Server.Port = port
-	}
-
-	//scheduler replace
-	schedulerHost := os.Getenv("SCHEDULER_HOST")
-	schedulerPort := os.Getenv("SCHEDULER_PORT")
-	if !utils.IsStringEmpty(schedulerHost) {
-		m.Scheduler.Host = schedulerHost
-	}
-	if !utils.IsStringEmpty(schedulerPort) {
-		m.Scheduler.Port = schedulerPort
 	}
 
 	return nil

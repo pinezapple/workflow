@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"workflow/heimdall/core"
 	"workflow/heimdall/services"
 	"workflow/heimdall/webserver/forms"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 var logger = core.GetLogger()
@@ -25,13 +26,6 @@ var logger = core.GetLogger()
 // @Tags workflow
 // @Router /workflows [GET]
 func HandleGETWorkflows(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow", "read", "heimdall")
-	print("Authz resp ", ok)
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	pageSize, pageToken, filterMap, err := getFilterParam(c)
 	if err != nil {
 		return
@@ -62,12 +56,6 @@ func HandleGETWorkflows(c *gin.Context) {
 // @Tags workflow
 // @Router /workflows [POST]
 func HandlePOSTWorkflow(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	var workflowForm forms.WorkflowForm
 	err := c.Bind(&workflowForm)
 	if err != nil {
@@ -97,12 +85,6 @@ func HandlePOSTWorkflow(c *gin.Context) {
 // @Tags workflow
 // @Router /workflows/:workflow_id [GET]
 func HandleGETWorkflowByID(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	workflow_id := c.Param("workflow_id")
 	id, err := uuid.Parse(workflow_id)
 	if err != nil {
@@ -133,12 +115,6 @@ func HandleGETWorkflowByID(c *gin.Context) {
 // @Tags workflow
 // @Router /workflows/:workflow_id [PUT]
 func HandlePUTWorkflowByID(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow", "update", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	workflow_id := c.Param("workflow_id")
 	id, err := uuid.Parse(workflow_id)
 	if err != nil {
@@ -175,12 +151,6 @@ func HandlePUTWorkflowByID(c *gin.Context) {
 // @Tags workflow
 // @Router /workflows/:workflow_id [DELETE]
 func HandleDeleteWorkflow(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow", "delete", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	workflow_id := c.Param("workflow_id")
 	id, err := uuid.Parse(workflow_id)
 	if err != nil {
@@ -209,12 +179,6 @@ func HandleDeleteWorkflow(c *gin.Context) {
 // @Tags run
 // @Router /workflows/:workflow_id/runs [GET]
 func HandleGetRunsOfWorkflow(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	pageSize, pageToken, filter, err := getFilterParam(c)
 	if err != nil {
 		return
@@ -228,8 +192,9 @@ func HandleGetRunsOfWorkflow(c *gin.Context) {
 		return
 	}
 
-	ctx := c
-	username := ctx.Value("UserName").(string)
+	//ctx := c
+	//username := ctx.Value("UserName").(string)
+	username := "tungnt99"
 	workflowService := services.GetWorkflowService()
 	runs, total, err := workflowService.GetWorkflowRuns(c, username, id, pageSize, pageToken, filter)
 	if err != nil {

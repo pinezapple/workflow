@@ -6,10 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-	"workflow/heimdall/services"
-	"workflow/heimdall/utils"
 	"workflow/heimdall/webserver/forms"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -71,26 +70,4 @@ func getFilterParam(c *gin.Context) (pageSize int, pageToken int, filter map[str
 		}
 	}
 	return
-}
-
-func getBoolParam(c *gin.Context, key string) bool {
-	v := c.Query(key)
-	if len(v) == 0 {
-		return false
-	}
-
-	switch strings.ToLower(v) {
-	case "true":
-		return true
-	case "false":
-		return false
-	}
-
-	return false
-}
-
-func AuthzRequest(ctx *gin.Context, resource, method, service string) bool {
-	jwtToken := utils.GetJwtToken(ctx)
-	ok, _ := services.GetArboristService().AuthzRequest(ctx, jwtToken, resource, method, service)
-	return ok
 }

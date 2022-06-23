@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"workflow/heimdall/services"
-
-	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
 	"workflow/heimdall/core"
 	_ "workflow/heimdall/docs"
 	"workflow/heimdall/repository"
-	"workflow/heimdall/webserver/middlewares"
 	"workflow/heimdall/webserver/router"
 	"workflow/workflow-utils/model"
+
+	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 var (
@@ -65,10 +63,7 @@ func WebServer(ctx context.Context) (fn model.Daemon, err error) {
 	logger.Info("Starting webserver")
 
 	InitDabase(ctx)
-	middlewares.InitAuthN(config.Server)
 	r := router.NewRouter()
-
-	services.SetArborist(core.GetConfig().Arborist)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.Server.Port),

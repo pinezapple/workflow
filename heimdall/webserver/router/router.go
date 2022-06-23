@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"workflow/heimdall/core"
+	_ "workflow/heimdall/docs"
+	"workflow/heimdall/webserver/controllers"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"workflow/heimdall/core"
-	_ "workflow/heimdall/docs"
-	"workflow/heimdall/webserver/controllers"
-	"workflow/heimdall/webserver/middlewares"
 )
 
 func logRequest() gin.HandlerFunc {
@@ -60,7 +60,7 @@ func NewRouter() (router *gin.Engine) {
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	// Workflow handlers
-	workflows := router.Group("/workflows", middlewares.DecodeToken())
+	workflows := router.Group("/workflows")
 	{
 		workflows.GET("", controllers.HandleGETWorkflows)
 		workflows.GET("/:workflow_id", controllers.HandleGETWorkflowByID)
@@ -71,7 +71,7 @@ func NewRouter() (router *gin.Engine) {
 	}
 
 	// Workflow runs handlers
-	runs := router.Group("/runs", middlewares.DecodeToken())
+	runs := router.Group("/runs")
 	{
 		runs.GET("", controllers.HandleGETRuns)
 		runs.GET("/:run_id", controllers.HandleGETRun)
@@ -82,7 +82,7 @@ func NewRouter() (router *gin.Engine) {
 	}
 
 	// Task handlers
-	tasks := router.Group("/tasks", middlewares.DecodeToken())
+	tasks := router.Group("/tasks")
 	{
 		tasks.GET("", controllers.HandleGETTasks)
 		tasks.GET("/:task_id", controllers.HandleGETTask)
@@ -91,7 +91,7 @@ func NewRouter() (router *gin.Engine) {
 	}
 
 	// Project handlers
-	projects := router.Group("/projects", middlewares.DecodeToken())
+	projects := router.Group("/projects")
 	{
 		projects.GET("", controllers.HandleGETProjects)
 		projects.GET("/:project_id", controllers.HandleGETProject)

@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"workflow/heimdall/services"
 	"workflow/heimdall/webserver/forms"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // HandleGETTasks ...
@@ -22,12 +23,6 @@ import (
 // @Tags task
 // @Router /tasks [GET]
 func HandleGETTasks(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run/task", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	pageSize, pageToken, filterMap, err := getFilterParam(c)
 	if err != nil {
 		return
@@ -57,12 +52,6 @@ func HandleGETTasks(c *gin.Context) {
 // @Tags task
 // @Router /tasks/:task_id [GET]
 func HandleGETTask(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run/task", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	task_id := c.Param("task_id")
 	id, err := uuid.Parse(task_id)
 	if err != nil {
@@ -90,12 +79,6 @@ func HandleGETTask(c *gin.Context) {
 // @Tags task
 // @Router /tasks [POST]
 func HandlePOSTTask(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run/task", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	var taskForm forms.TaskFormDto
 	err := c.BindJSON(&taskForm)
 	if err != nil {

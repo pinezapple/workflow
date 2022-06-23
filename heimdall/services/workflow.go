@@ -179,7 +179,7 @@ func convertWorkflowForm2Entity(ctx *gin.Context, workflow forms.WorkflowForm,
 		Description: workflow.Description,
 		Content:     workflow.Content,
 		Class:       workflow.Class,
-		Author:      fmt.Sprintf("%s", ctx.Value("UserName")),
+		Author:      "tungnt99",
 		Tags:        tags,
 	}
 	if generateID {

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
 	"workflow/heimdall/core"
-	"workflow/heimdall/infra"
+
+	"github.com/google/uuid"
 
 	"workflow/heimdall/repository"
 	"workflow/heimdall/repository/entity"
@@ -176,40 +176,6 @@ func (tSU *taskStatusUpdater) UpdateStatusSuccess(ctx context.Context, taskIDs [
 			}
 
 			logger.Infof("update run state to complete: %s", tasks[taskIndex].RunID)
-			go func() {
-				run, err := repository.GetDAO().GetRun(ctx, tasks[taskIndex].RunID)
-				if err != nil {
-					logger.Errorf("Error getting run: %v", err)
-					return
-				}
-
-				workflow, err := repository.GetDAO().GetWorkflow(ctx, run.WorkflowID)
-				if err != nil {
-					logger.Errorf("Error getting workflow: %v", err)
-					return
-				}
-
-				task, err := repository.GetDAO().GetTask(ctx, tasks[taskIndex].ID)
-				if err != nil {
-					logger.Errorf("Error getting task: %v", err)
-					return
-				}
-
-				if err := infra.GetMailSrv().SendNotifyEmail(
-					ctx,
-					run.UserName,
-					run.ID.String(),
-					workflow.Name,
-					"COMPLETED",
-					task.ID.String(),
-					task.TaskID,
-				); err != nil {
-					logger.Errorf("Send notify email error: %v", err)
-					return
-				}
-
-				logger.Infof("Send notify email to %s about run %s has completed", run.UserName, tasks[taskIndex].RunID)
-			}()
 		}
 
 	}
@@ -249,41 +215,6 @@ func (tSU *taskStatusUpdater) UpdateStatusFail(ctx context.Context, taskIDs []st
 			return err
 		}
 		logger.Infof("Update Run State to fail: %s", tasks[taskIndex].RunID)
-
-		go func() {
-			run, err := repository.GetDAO().GetRun(ctx, tasks[taskIndex].RunID)
-			if err != nil {
-				logger.Errorf("Error getting run: %v", err)
-				return
-			}
-
-			workflow, err := repository.GetDAO().GetWorkflow(ctx, run.WorkflowID)
-			if err != nil {
-				logger.Errorf("Error getting workflow: %v", err)
-				return
-			}
-
-			task, err := repository.GetDAO().GetTask(ctx, tasks[taskIndex].ID)
-			if err != nil {
-				logger.Errorf("Error getting task: %v", err)
-				return
-			}
-
-			if err := infra.GetMailSrv().SendNotifyEmail(
-				ctx,
-				run.UserName,
-				run.ID.String(),
-				workflow.Name,
-				"FAILED",
-				task.ID.String(),
-				task.TaskID,
-			); err != nil {
-				logger.Errorf("Send notify email error: %v", err)
-				return
-			}
-
-			logger.Infof("Send notify email to %s about run %s has completed", run.UserName, tasks[taskIndex].RunID)
-		}()
 
 		runIDMap[tasks[taskIndex].RunID] = false
 	}

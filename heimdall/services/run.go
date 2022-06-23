@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"workflow/heimdall/core"
 	"workflow/heimdall/repository"
 	"workflow/heimdall/repository/entity"
 	"workflow/heimdall/services/dto"
 	"workflow/heimdall/webserver/forms"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // RunService interface
@@ -75,7 +76,7 @@ func (service runServiceImpl) CreateRunWorkflow(ctx *gin.Context, runForm *forms
 		// Tags       []byte `gorm:"type:jsonb"`
 		Request:     runRequest,
 		WorkflowID:  workflow.ID,
-		UserName:    fmt.Sprintf("%v", ctx.Value("UserName")),
+		UserName:    "tungnt99",
 		State:       core.StateUnknown,
 		ProjectID:   workflow.ProjectID,
 		ProjectPath: "/", // TODO: HARD CODE FIX
@@ -99,7 +100,7 @@ func (service runServiceImpl) CreateRunWorkflow(ctx *gin.Context, runForm *forms
 
 	tfReq := dto.TransformRequest{
 		RunIndex: runEntity.RunIndex,
-		UserName: fmt.Sprintf("%v", ctx.Value("UserName")),
+		UserName: "tungnt99",
 		Name:     workflow.Name,
 		Content:  workflow.Content,
 		Params:   runForm.WorkflowParams,
@@ -175,7 +176,7 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 		// Tags       []byte `gorm:"type:jsonb"`
 		Request:     runRequest,
 		WorkflowID:  workflow.ID,
-		UserName:    fmt.Sprintf("%v", ctx.Value("UserName")),
+		UserName:    "tungnt99",
 		State:       core.StateUnknown,
 		ProjectID:   workflow.ProjectID,
 		ProjectPath: "/", // TODO: HARD CODE FIX
@@ -199,7 +200,7 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 
 	tfReq := dto.TransformRequest{
 		RunIndex: runEntity.RunIndex,
-		UserName: fmt.Sprintf("%v", ctx.Value("UserName")),
+		UserName: "tungnt99",
 		Name:     workflow.Name,
 		Content:  workflow.Content,
 		Params:   runForm.WorkflowParams,
@@ -258,16 +259,6 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 		return
 	}
 
-	err = GetSchedulerService().SendRun(ctx, &tfRes.Data, 100)
-	if err != nil {
-		// if the scheduler doesn't accept the run, delete it
-		if err := dbDAO.DeleteRun(ctx, runEntity); err != nil {
-			logger.Errorf("CreateRun - delete the run: %s", runEntity.ID)
-			logger.Errorf("Delete run error: %s", err.Error())
-		}
-		return runDto, err
-	}
-
 	return runDto, nil
 }
 
@@ -324,7 +315,7 @@ func updateRunEntity(ctx *gin.Context, runEntity *entity.RunEntity, tfRes dto.Tr
 			// Description
 			IsBoundary: task.IsBoundary,
 			StepName:   task.StepName,
-			UserName:   fmt.Sprintf("%v", ctx.Value("UserName")),
+			UserName:   "tungnt99",
 			Command:    cmds,
 			// Inputs
 			// Outputs

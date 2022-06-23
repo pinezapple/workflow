@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"workflow/heimdall/services"
 	"workflow/heimdall/webserver/forms"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // HandleGETRuns handle get run list
@@ -22,12 +23,6 @@ import (
 // @Tags run
 // @Router /runs [GET]
 func HandleGETRuns(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	pageSize, pageToken, filterMap, _ := getFilterParam(c)
 
 	runs, total, err := services.GetRunService().GetRuns(c, pageSize, pageToken, filterMap)
@@ -53,12 +48,6 @@ func HandleGETRuns(c *gin.Context) {
 // @Tags run
 // @Router /runs/:run_id [GET]
 func HandleGETRun(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	run_id := c.Param("run_id")
 	id, err := uuid.Parse(run_id)
 	if err != nil {
@@ -86,12 +75,6 @@ func HandleGETRun(c *gin.Context) {
 // @Tags run
 // @Router /runs [POST]
 func HandlePOSTRun(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	var runForm *forms.WorkflowRunForm
 	err := c.BindJSON(&runForm)
 	if err != nil {
@@ -123,12 +106,6 @@ func HandlePOSTRun(c *gin.Context) {
 // @Tags run
 // @Router /runs/:run_id/status [GET]
 func HandleGETRunStatus(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/run", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	run_id := c.Param("run_id")
 	id, err := uuid.Parse(run_id)
 	if err != nil {

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"workflow/heimdall/services"
+	"workflow/heimdall/webserver/forms"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"workflow/heimdall/services"
-	"workflow/heimdall/utils"
-	"workflow/heimdall/webserver/forms"
 )
 
 // HandlePOSTProject handle create project
@@ -21,12 +21,6 @@ import (
 // @Tags project
 // @Router /projects [POST]
 func HandlePOSTProject(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	var projectForm forms.ProjectForm
 	err := c.Bind(&projectForm)
 	if err != nil {
@@ -55,12 +49,6 @@ func HandlePOSTProject(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_id} [GET]
 func HandleGETProject(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	project_id := c.Param("project_id")
 	id, err := uuid.Parse(project_id)
 	if err != nil {
@@ -92,45 +80,7 @@ func HandleGETProject(c *gin.Context) {
 // @Tags 			project
 // @Router 			/projects [GET]
 func HandleGETProjects(c *gin.Context) {
-	var (
-		ok             bool
-		projectService = services.GetProjectService()
-		abr            = services.GetArboristService()
-		sharePrjs      []forms.ProjectDto
-	)
-
-	// Get shared projects
-	ok = AuthzRequest(c, "/workflow/project", "read", "heimdall")
-	print("Authz resp ", ok)
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
-	if getBoolParam(c, "share") {
-		prjAuths, err := abr.GetShareProjects(c, utils.GetJwtToken(c))
-		if err != nil {
-			logger.Errorf("Get shared projects error: %v", err)
-			ResponseError(c, errors.New("Get shared projects error"), http.StatusInternalServerError)
-			return
-		}
-
-		sharePrjs, err = projectService.GetProjectsFromAuth(c, prjAuths)
-		if err != nil {
-			logger.Errorf("Query shared projects error: %v", err)
-			ResponseError(c, errors.New("Query shared projects error"), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	// Get user projects
-	ok = AuthzRequest(c, "/workflow/project", "read", "heimdall")
-	print("Authz resp ", ok)
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
+	projectService := services.GetProjectService()
 	pageSize, pageToken, filterMap, err := getFilterParam(c)
 	if err != nil {
 		return
@@ -143,7 +93,6 @@ func HandleGETProjects(c *gin.Context) {
 	}
 
 	response := &forms.ProjectsDto{
-		ShareProjects: sharePrjs,
 		Projects:      projects,
 		NextPageToken: strconv.Itoa(pageToken + 1),
 		Total:         total,
@@ -166,12 +115,6 @@ func HandleGETProjects(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_uuid}/workflows [GET]
 func HandleGETWorkflowsOfProject(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "read", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	pageSize, pageToken, filter, err := getFilterParam(c)
 	if err != nil {
 		return
@@ -185,8 +128,9 @@ func HandleGETWorkflowsOfProject(c *gin.Context) {
 		return
 	}
 
-	ctx := c
-	username := ctx.Value("UserName").(string)
+	//ctx := c
+	//username := ctx.Value("UserName").(string)
+	username := "tungnt99"
 	projectService := services.GetProjectService()
 	workflows, total, err := projectService.GetProjectWorkflows(c, username, id, pageSize, pageToken, filter)
 	if err != nil {
@@ -210,12 +154,6 @@ func HandleGETWorkflowsOfProject(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_id} [PUT]
 func HandlePUTProjectByID(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "update", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	project_id := c.Param("project_id")
 	id, err := uuid.Parse(project_id)
 	if err != nil {
@@ -252,12 +190,6 @@ func HandlePUTProjectByID(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_id} [DELETE]
 func HandleDeleteProjectByID(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "delete", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	project_id := c.Param("project_id")
 	id, err := uuid.Parse(project_id)
 	if err != nil {
@@ -286,12 +218,6 @@ func HandleDeleteProjectByID(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_id}/folders [POST]
 func HandlePOSTFolder(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	project_id := c.Param("project_id")
 	id, err := uuid.Parse(project_id)
 	if err != nil {
@@ -328,12 +254,6 @@ func HandlePOSTFolder(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_id}/folders [PUT]
 func HandlePUTFolder(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	project_id := c.Param("project_id")
 	_, err := uuid.Parse(project_id)
 	if err != nil {
@@ -370,12 +290,6 @@ func HandlePUTFolder(c *gin.Context) {
 // @Tags project
 // @Router /projects/{project_id}/folders/{folder_id} [DELETE]
 func HandleDELETEFolder(c *gin.Context) {
-	ok := AuthzRequest(c, "/workflow/project", "create", "heimdall")
-	if ok == false {
-		ResponseError(c, errors.New("You do not have permission"), http.StatusForbidden)
-		return
-	}
-
 	project_id := c.Param("project_id")
 	_, err := uuid.Parse(project_id)
 	if err != nil {

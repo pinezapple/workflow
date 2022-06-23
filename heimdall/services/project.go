@@ -143,7 +143,7 @@ func (service projectServiceImpl) CreateProjectFolder(ctx *gin.Context, id uuid.
 	var folderEntity = entity.FolderEntity{
 		Name:      folder.Name,
 		Path:      folder.Path,
-		Author:    fmt.Sprintf("%s", ctx.Value("UserName")),
+		Author:    "tungnt99",
 		ProjectID: id,
 	}
 
@@ -237,7 +237,7 @@ func convertProjectForm2Entity(ctx *gin.Context, project forms.ProjectForm,
 		Name:        project.Name,
 		Description: project.Description,
 		Summary:     project.Summary,
-		Author:      fmt.Sprintf("%s", ctx.Value("UserName")),
+		Author:      "tungnt99",
 	}
 	if generateID {
 		projectEntity.ID = uuid.New()
