@@ -10,7 +10,6 @@ import (
 
 	"workflow/valkyrie/controller/handler"
 	"workflow/valkyrie/core"
-	"workflow/valkyrie/middleware"
 	"workflow/workflow-utils/model"
 
 	echo "github.com/labstack/echo/v4"
@@ -18,8 +17,9 @@ import (
 
 	// echopprof "github.com/sevenNt/echo-pprof"
 
-	echoSwagger "github.com/swaggo/echo-swagger"
 	_ "workflow/valkyrie/docs"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func logRequest(logger *core.Logger) echo.MiddlewareFunc {
@@ -131,7 +131,7 @@ func WebServer(ctx context.Context) (fn model.Daemon, err error) {
 }
 
 func initHardDiskOnlyRouter(e *echo.Echo) {
-	files := e.Group("/files", middleware.DecodeJWT)
+	files := e.Group("/files")
 	{
 		files.GET("", handler.GetFiles)
 		files.GET("/uploaded", handler.GetUserUploadFiles)
@@ -155,13 +155,13 @@ func initHardDiskOnlyRouter(e *echo.Echo) {
 		internal.DELETE("/files", handler.DeleteFailRunDir)
 	}
 
-	dataset := e.Group("/datasets", middleware.DecodeJWT)
+	dataset := e.Group("/datasets")
 	{
 		dataset.GET("", handler.GetDatasetFilter)
 		dataset.POST("", handler.CreateDataset)
 	}
 
-	sample := e.Group("/samples", middleware.DecodeJWT)
+	sample := e.Group("/samples")
 	{
 		sample.GET("", handler.GetSampleFilter)
 		sample.POST("", handler.CreateSample)
@@ -174,7 +174,7 @@ func initHardDiskOnlyRouter(e *echo.Echo) {
 }
 
 func initRouter(e *echo.Echo) {
-	files := e.Group("/files", middleware.DecodeJWT)
+	files := e.Group("/files")
 	{
 		//files.GET("/", handler.GetUserFilesWithFilters)
 		//files.POST("/upload", handler.UserUploadFileToMinio)

@@ -12,7 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	jwtAuth "github.com/uc-cdis/go-authutils/authutils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
@@ -27,63 +26,14 @@ var (
 	minioBucketSlice     []*MinioBucketCurrentConf
 	minioBucketSliceLock sync.Mutex
 
-	expectedJWT     *jwtAuth.Expected
-	expectedJWTLock sync.RWMutex
-
 	DownloadLock sync.RWMutex
 
 	mainConfig     *MainConfig
 	mainConfigLock sync.RWMutex
 
-	jwtApp     *jwtAuth.JWTApplication
-	jwtAppLock sync.RWMutex
-
 	DB     *gorm.DB
 	DBLock sync.RWMutex
 )
-
-func InitExpectedJWT() {
-	mainConf := GetMainConfig()
-	e := &jwtAuth.Expected{
-		Audiences:  mainConf.HttpServerConfig.ExpectJWTConfig.Audiences,
-		Expiration: mainConf.HttpServerConfig.ExpectJWTConfig.Expiration,
-		Issuers:    mainConf.HttpServerConfig.ExpectJWTConfig.Issuers,
-		Purpose:    &mainConf.HttpServerConfig.ExpectJWTConfig.Purpose,
-	}
-	SetExpectedJWT(e)
-}
-
-func SetExpectedJWT(v *jwtAuth.Expected) {
-	expectedJWTLock.Lock()
-	defer expectedJWTLock.Unlock()
-	expectedJWT = v
-}
-
-func GetExpectJWT() (v *jwtAuth.Expected) {
-	expectedJWTLock.RLock()
-	defer expectedJWTLock.RUnlock()
-	v = expectedJWT
-	return
-}
-
-func InitJWTApplication() {
-	mainConf := GetMainConfig()
-	jwtApp := jwtAuth.NewJWTApplication(mainConf.HttpServerConfig.JwkURL)
-	SetJWTApplication(jwtApp)
-}
-
-func SetJWTApplication(v *jwtAuth.JWTApplication) {
-	jwtAppLock.Lock()
-	defer jwtAppLock.Unlock()
-	jwtApp = v
-}
-
-func GetJWTApplication() (v *jwtAuth.JWTApplication) {
-	jwtAppLock.RLock()
-	defer jwtAppLock.RUnlock()
-	v = jwtApp
-	return
-}
 
 func RestartMinioBuckets(size []int64, count []int32) {
 	minioBucketSliceLock.Lock()
@@ -301,8 +251,6 @@ func InitialTableDatabase(ctx context.Context) (er error) {
 }
 
 func InitCore(ctx context.Context) {
-	InitExpectedJWT()
-	InitJWTApplication()
 	InitialConnectToDatabase(ctx)
 	InitialTableDatabase(ctx)
 

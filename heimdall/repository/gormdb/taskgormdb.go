@@ -39,7 +39,7 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 		}
 
 		var childrenTasks []entity.TaskEntity
-		err = tx.Raw("SELECT FROM task_entities WHERE id IN (SELECT children_task_id FROM task_entities WHERE id = ?) AND parent_done_count <> 0", task.ID).Scan(&childrenTasks).Error
+		err = tx.Raw("SELECT FROM task_entities WHERE task_id IN (SELECT children_task_id FROM task_entities WHERE id = ?) AND parent_done_count <> 0", task.ID).Scan(&childrenTasks).Error
 		for i := 0; i < len(childrenTasks); i++ {
 			// This is the final task of the run
 			if childrenTasks[i].IsBoundary && childrenTasks[i].ParentsDoneCount == 1 {
