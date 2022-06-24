@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"k8s.io/client-go/kubernetes"
@@ -30,11 +29,9 @@ func IsGoodToGo(threshold int) bool {
 	JobCountLock.Lock()
 	defer JobCountLock.Unlock()
 	if JobCount < threshold {
-		fmt.Println(JobCount)
 		JobCount++
 		return true
 	} else {
-		fmt.Println(JobCount)
 		return false
 	}
 }

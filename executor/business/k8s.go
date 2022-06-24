@@ -115,6 +115,7 @@ func ConstructK8SJob(job *model.TaskDTO, temporalWfID, temporalRunID string) (k8
 								Image:           dockerImage,
 								ImagePullPolicy: "IfNotPresent",
 								VolumeMounts:    volumeMounts,
+								WorkingDir:      workingDir,
 
 								Command: []string{defaultBashCommand},
 								Args:    args,
@@ -287,6 +288,7 @@ func Args(job *model.TaskDTO) (args []string) {
 		command = append(command, commandArg)
 	}
 
+	//args = append(args, "sleep 5m && "+strings.Join(command, ""))
 	args = append(args, strings.Join(command, ""))
 	return
 }

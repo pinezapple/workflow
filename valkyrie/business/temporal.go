@@ -75,7 +75,7 @@ func (e *ValkyrieTemporal) RegisterWorker() (err error) {
 	// TODO: fix this after you have config
 	workerOptions := worker.Options{}
 	// TODO: add task queue name
-	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
+	e.worker = worker.New(e.tempCli, model.BifrostValAct, workerOptions)
 
 	// register activity
 	e.worker.RegisterActivityWithOptions(e.SaveGeneratedFileAct, activity.RegisterOptions{Name: model.SaveGeneratedFileActName})

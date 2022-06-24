@@ -23,9 +23,10 @@ import (
 const ()
 
 type HeimdallTemporal struct {
-	tempCli client.Client
-	worker  worker.Worker
-	lg      *core.Logger
+	tempCli   client.Client
+	wfWorker  worker.Worker
+	actWorker worker.Worker
+	lg        *core.Logger
 }
 
 type ExecuteTaskParam struct {
@@ -63,7 +64,8 @@ func RunTemporalDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
 
 	fn = func() {
 		<-parentCtx.Done()
-		heimdallTemp.worker.Stop()
+		heimdallTemp.wfWorker.Stop()
+		heimdallTemp.actWorker.Stop()
 		heimdallTemp.tempCli.Close()
 
 		lg.Info("Shutting down Temporal daemon")
@@ -96,22 +98,27 @@ func (e *HeimdallTemporal) RegisterWorker() (err error) {
 		MaxConcurrentWorkflowTaskExecutionSize: 1000,
 	}
 	// TODO: add task queue name
-	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
-
+	e.wfWorker = worker.New(e.tempCli, model.BifrostHeimWf, workerOptions)
 	// register workflow
-	e.worker.RegisterWorkflowWithOptions(e.ExecuteTaskWf, workflow.RegisterOptions{Name: model.ExecuteTaskWfName})
+	e.wfWorker.RegisterWorkflowWithOptions(e.ExecuteTaskWf, workflow.RegisterOptions{Name: model.ExecuteTaskWfName})
 
+	e.actWorker = worker.New(e.tempCli, model.BifrostHeimAct, workerOptions)
 	// register activity
-	e.worker.RegisterActivityWithOptions(e.UpdateTaskStatusAct, activity.RegisterOptions{Name: model.UpdateTaskStatusActName})
-	e.worker.RegisterActivityWithOptions(e.UpdateTaskSuccessAct, activity.RegisterOptions{Name: model.UpdateTaskSuccessActName})
-	e.worker.RegisterActivityWithOptions(e.UpdateTaskFailAct, activity.RegisterOptions{Name: model.UpdateTaskFailActName})
-	e.worker.RegisterActivityWithOptions(e.UpdateTaskStartTimeAct, activity.RegisterOptions{Name: model.UpdateTaskStartTimeActName})
+	e.actWorker.RegisterActivityWithOptions(e.UpdateTaskStatusAct, activity.RegisterOptions{Name: model.UpdateTaskStatusActName})
+	e.actWorker.RegisterActivityWithOptions(e.UpdateTaskSuccessAct, activity.RegisterOptions{Name: model.UpdateTaskSuccessActName})
+	e.actWorker.RegisterActivityWithOptions(e.UpdateTaskFailAct, activity.RegisterOptions{Name: model.UpdateTaskFailActName})
+	e.actWorker.RegisterActivityWithOptions(e.UpdateTaskStartTimeAct, activity.RegisterOptions{Name: model.UpdateTaskStartTimeActName})
 
 	// TODO: add LOGGGG
 	e.lg.Info("Starting Temporal workers")
-	if err := e.worker.Start(); err != nil {
+	if err := e.wfWorker.Start(); err != nil {
 		return err
 	}
+
+	if err := e.actWorker.Start(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -124,18 +131,17 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
-		BackoffCoefficient: 2.0,
-		MaximumInterval:    time.Minute,
+		BackoffCoefficient: 1.0,
 		MaximumAttempts:    500,
 	}
 	options := workflow.ActivityOptions{
-		TaskQueue:           model.BifrostQueueName,
-		StartToCloseTimeout: time.Minute,
+		TaskQueue:           model.BifrostHeimAct,
+		StartToCloseTimeout: 2 * time.Second,
 		RetryPolicy:         retrypolicy,
 	}
-	ctx = workflow.WithActivityOptions(ctx, options)
+	ctx1 := workflow.WithActivityOptions(ctx, options)
 
-	future := workflow.ExecuteActivity(ctx, model.UpdateTaskStatusActName, updateStatusParam)
+	future := workflow.ExecuteActivity(ctx1, model.UpdateTaskStatusActName, updateStatusParam)
 	if err = future.Get(ctx, nil); err != nil {
 		u.lg.Error(err.Error())
 		return
@@ -151,7 +157,18 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 		Task: taskDTO,
 	}
 	var resp = model.ExecuteTaskResult{}
-	future = workflow.ExecuteActivity(ctx, model.ExecuteTaskActName, req)
+	retrypolicy = &temporal.RetryPolicy{
+		InitialInterval:    time.Second,
+		BackoffCoefficient: 1.0,
+		MaximumAttempts:    500,
+	}
+	options = workflow.ActivityOptions{
+		TaskQueue:           model.BifrostExAct,
+		StartToCloseTimeout: 2 * time.Second,
+		RetryPolicy:         retrypolicy,
+	}
+	ctx2 := workflow.WithActivityOptions(ctx, options)
+	future = workflow.ExecuteActivity(ctx2, model.ExecuteTaskActName, req)
 	if err = future.Get(ctx, &resp); err != nil {
 		u.lg.Error(err.Error())
 		return
@@ -160,7 +177,7 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 
 	// if fail to execute job on k8s, fail this run
 	if !resp.Created {
-		future = workflow.ExecuteActivity(ctx, model.UpdateTaskFailActName, model.UpdateTaskFailParam{TaskID: param.Task.TaskID})
+		future = workflow.ExecuteActivity(ctx1, model.UpdateTaskFailActName, model.UpdateTaskFailParam{TaskID: param.Task.TaskID})
 		if err = future.Get(ctx, nil); err != nil {
 			u.lg.Error(err.Error())
 			return
@@ -168,7 +185,7 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 		u.lg.Info("update task " + param.Task.TaskID + " status to failed")
 	} else {
 		// STEP 3: update task start time
-		future = workflow.ExecuteActivity(ctx, model.UpdateTaskStartTimeActName, UpdateTaskStartTimeParam{TaskID: param.Task.TaskID, TimeStamp: resp.TimeStamp})
+		future = workflow.ExecuteActivity(ctx1, model.UpdateTaskStartTimeActName, UpdateTaskStartTimeParam{TaskID: param.Task.TaskID, TimeStamp: resp.TimeStamp})
 		if err = future.Get(ctx, nil); err != nil {
 			u.lg.Error(err.Error())
 			return
@@ -218,7 +235,7 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 	for i := 0; i < len(childtask); i++ {
 		wo := client.StartWorkflowOptions{
 			ID:        childtask[i].TaskID + "-" + model.ExecuteTaskWfName,
-			TaskQueue: model.BifrostQueueName,
+			TaskQueue: model.BifrostHeimWf,
 		}
 
 		res, err := u.tempCli.ExecuteWorkflow(ctx, wo, model.ExecuteTaskWfName, ExecuteTaskParam{Task: childtask[i]})

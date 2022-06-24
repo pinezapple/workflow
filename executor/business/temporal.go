@@ -17,9 +17,10 @@ import (
 const ()
 
 type ExecutorTemporal struct {
-	tempCli client.Client
-	worker  worker.Worker
-	lg      *core.LogFormat
+	tempCli   client.Client
+	wfWorker  worker.Worker
+	actWorker worker.Worker
+	lg        *core.LogFormat
 }
 
 var executorTemp = &ExecutorTemporal{}
@@ -49,7 +50,8 @@ func RunTemporalDaemon(parentCtx context.Context) (fn model.Daemon, err error) {
 
 	fn = func() {
 		<-parentCtx.Done()
-		executorTemp.worker.Stop()
+		executorTemp.wfWorker.Stop()
+		executorTemp.actWorker.Stop()
 		executorTemp.tempCli.Close()
 
 		lg.Info("Shutting down Temporal daemon")
@@ -76,21 +78,27 @@ func (e *ExecutorTemporal) RegisterWorker() (err error) {
 	}
 
 	// TODO: add task queue name
-	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
-
+	e.wfWorker = worker.New(e.tempCli, model.BifrostExWf, workerOptions)
 	// register workflow
-	e.worker.RegisterWorkflowWithOptions(e.DoneTaskWf, workflow.RegisterOptions{Name: model.DoneTaskWfName})
-	e.worker.RegisterWorkflowWithOptions(e.FailTaskWf, workflow.RegisterOptions{Name: model.FailTaskWfName})
+	e.wfWorker.RegisterWorkflowWithOptions(e.DoneTaskWf, workflow.RegisterOptions{Name: model.DoneTaskWfName})
+	e.wfWorker.RegisterWorkflowWithOptions(e.FailTaskWf, workflow.RegisterOptions{Name: model.FailTaskWfName})
 
+	e.actWorker = worker.New(e.tempCli, model.BifrostExAct, workerOptions)
 	// register activity
-	e.worker.RegisterActivityWithOptions(e.ExecuteTaskAct, activity.RegisterOptions{Name: model.ExecuteTaskActName})
-	e.worker.RegisterActivityWithOptions(e.DeleteTaskAct, activity.RegisterOptions{Name: model.DeleteTaskActName})
+	e.actWorker.RegisterActivityWithOptions(e.ExecuteTaskAct, activity.RegisterOptions{Name: model.ExecuteTaskActName})
+	e.actWorker.RegisterActivityWithOptions(e.DeleteTaskAct, activity.RegisterOptions{Name: model.DeleteTaskActName})
 
 	// TODO: add LOGGGG
-	if err := e.worker.Start(); err != nil {
+	if err := e.wfWorker.Start(); err != nil {
 		e.lg.Error(err.Error())
 		return err
 	}
+
+	if err := e.actWorker.Start(); err != nil {
+		e.lg.Error(err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -101,7 +109,6 @@ func (e *ExecutorTemporal) DoneTaskWf(ctx workflow.Context, param model.UpdateTa
 	// STEP 1: Update task success to heimdall
 	var res = model.UpdateTaskSuccessResult{}
 	e.lg.Info("[DoneTaskWf] Execute update task success activity for " + param.TaskID)
-
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
 		BackoffCoefficient: 2.0,
@@ -109,21 +116,33 @@ func (e *ExecutorTemporal) DoneTaskWf(ctx workflow.Context, param model.UpdateTa
 		MaximumAttempts:    500,
 	}
 	options := workflow.ActivityOptions{
-		TaskQueue:           model.BifrostQueueName,
-		StartToCloseTimeout: time.Minute,
+		TaskQueue:           model.BifrostHeimAct,
+		StartToCloseTimeout: 2 * time.Second,
 		RetryPolicy:         retrypolicy,
 	}
-	ctx = workflow.WithActivityOptions(ctx, options)
+	ctx1 := workflow.WithActivityOptions(ctx, options)
 
-	future := workflow.ExecuteActivity(ctx, model.UpdateTaskSuccessActName, param)
+	future := workflow.ExecuteActivity(ctx1, model.UpdateTaskSuccessActName, param)
 	if err = future.Get(ctx, &res); err != nil {
 		e.lg.Error(err.Error())
 		return
 	}
 
 	// STEP 2: Push files that needed to be saved to valkyrire
+	retrypolicy = &temporal.RetryPolicy{
+		InitialInterval:    time.Second,
+		BackoffCoefficient: 2.0,
+		MaximumInterval:    time.Minute,
+		MaximumAttempts:    500,
+	}
+	options = workflow.ActivityOptions{
+		TaskQueue:           model.BifrostValAct,
+		StartToCloseTimeout: 2 * time.Second,
+		RetryPolicy:         retrypolicy,
+	}
+	ctx2 := workflow.WithActivityOptions(ctx, options)
 	e.lg.Info("[DoneTaskWf] Execute save generated file activity for " + param.TaskID)
-	future = workflow.ExecuteActivity(ctx, model.SaveGeneratedFileActName, res)
+	future = workflow.ExecuteActivity(ctx2, model.SaveGeneratedFileActName, res)
 	if err = future.Get(ctx, nil); err != nil {
 		e.lg.Error(err.Error())
 		return
@@ -143,8 +162,8 @@ func (e *ExecutorTemporal) FailTaskWf(ctx workflow.Context, param model.UpdateTa
 		MaximumAttempts:    500,
 	}
 	options := workflow.ActivityOptions{
-		TaskQueue:           model.BifrostQueueName,
-		StartToCloseTimeout: time.Minute,
+		TaskQueue:           model.BifrostHeimAct,
+		StartToCloseTimeout: 2 * time.Second,
 		RetryPolicy:         retrypolicy,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)

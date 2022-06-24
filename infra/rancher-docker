@@ -1,0 +1,4 @@
+sudo docker run --privileged -d --restart=unless-stopped -v /home/pine/bio-input:/home/pine/bio-input -v /home/pine/bio-ref:/home/pine/bio-ref -v /home/pine/bio-output:/home/pine/bio-output -p 10080:80 -p 8443:443 rancher/rancher
+sudo docker exec -i -t rancher-container-name /bin/bash
+cd /home/pine/
+chmod all the files needed 

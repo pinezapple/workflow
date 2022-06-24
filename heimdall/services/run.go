@@ -137,12 +137,12 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 		return
 	}
 
-	heimdallTemp := GetHeimdallTemporal()
 	// Start to execute task
+	heimdallTemp := GetHeimdallTemporal()
 	for i := 0; i < len(childTask); i++ {
 		wo := client.StartWorkflowOptions{
 			ID:        childTask[i].TaskID + "-" + model.ExecuteTaskWfName,
-			TaskQueue: model.BifrostQueueName,
+			TaskQueue: model.BifrostHeimWf,
 		}
 		_, err := heimdallTemp.tempCli.ExecuteWorkflow(ctx, wo, model.ExecuteTaskWfName, ExecuteTaskParam{Task: childTask[i]})
 		if err != nil {

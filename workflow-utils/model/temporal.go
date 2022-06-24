@@ -20,7 +20,11 @@ const (
 	UpdateTaskStatusActName    = "UpdateTaskStatusAct"
 
 	//QueuName
-	BifrostQueueName = "Bifrost"
+	BifrostHeimWf  = "BifrostHeimWf"
+	BifrostHeimAct = "BifrostHeimAct"
+	BifrostExWf    = "BifrostExWf"
+	BifrostExAct   = "BifrostExAct"
+	BifrostValAct  = "BifrostValAct"
 )
 
 type ExecuteTaskParam struct {
