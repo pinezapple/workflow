@@ -16,6 +16,6 @@ K8S_MAX_RAM = 1
 K8S_NODE_LABEL_KEY = "node-label-key"
 K8S_NODE_LABEL_VALUE = "node-label-value"
 
-OUTPUT_DIR_PREFIX = "/home/ubuntu/output"
+OUTPUT_DIR_PREFIX = "/home/pine/bio-output"
 FUSE_MOUNT_POINT = ""
 MINIO_ENDPOINT = ""

@@ -34,14 +34,7 @@ func Boot() {
 		LogLevel:    viper.GetString("LOG_LEVEL"),
 
 		HttpServerConfig: &core.HTTPServerConf{
-			Port:   viper.GetInt("PORT"),
-			JwkURL: viper.GetString("JWL_URL"),
-
-			ExpectJWTConfig: &core.ExpectJWTConf{
-				Audiences: viper.GetStringSlice("AUDIENCES"),
-				Issuers:   viper.GetStringSlice("ISSUERS"),
-				Purpose:   viper.GetString("PURPOSE"),
-			},
+			Port: viper.GetInt("PORT"),
 		},
 		MinioConfig: &core.MinioConf{
 			AccessKey:      viper.GetString("ACCESS_KEY"),

@@ -39,7 +39,7 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 		}
 
 		var childrenTasks []entity.TaskEntity
-		err = tx.Raw("SELECT FROM task_entities WHERE task_id IN (SELECT children_task_id FROM task_entities WHERE id = ?) AND parent_done_count <> 0", task.ID).Scan(&childrenTasks).Error
+		err = tx.Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND parent_done_count <> 0", task.TaskID).Scan(&childrenTasks).Error
 		for i := 0; i < len(childrenTasks); i++ {
 			// This is the final task of the run
 			if childrenTasks[i].IsBoundary && childrenTasks[i].ParentsDoneCount == 1 {
@@ -110,12 +110,12 @@ func (tG *TaskGorm) GetTaskByTaskID(ctx context.Context, id string) (task entity
 }
 
 func (tG *TaskGorm) GetReadyChildrenTaskByTaskID(ctx context.Context, taskID string) (task []entity.TaskEntity, err error) {
-	err = gDB.WithContext(ctx).Raw("SELECT FROM task_entities WHERE task_id IN (SELECT children_task_id FROM task_entities WHERE task_id = ?) AND parent_done_count = 0 AND state LIKE ?", taskID, core.StateUnknown).Scan(&task).Error
+	err = gDB.WithContext(ctx).Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND parent_done_count = 0 AND state LIKE ?", taskID, core.StateUnknown).Scan(&task).Error
 	return
 }
 
 func (tG *TaskGorm) GetChildrenTaskByTaskID(ctx context.Context, taskID string) (task []entity.TaskEntity, err error) {
-	err = gDB.WithContext(ctx).Raw("SELECT FROM task_entities WHERE task_id IN (SELECT children_task_id FROM task_entities WHERE task_id = ?) AND state LIKE ?", taskID, core.StateUnknown).Scan(&task).Error
+	err = gDB.WithContext(ctx).Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND state LIKE ?", taskID, core.StateUnknown).Scan(&task).Error
 	return
 }
 

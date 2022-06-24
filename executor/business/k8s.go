@@ -48,7 +48,7 @@ func ConstructK8SJob(job *model.TaskDTO, temporalWfID, temporalRunID string) (k8
 		dockerImage = job.DockerImage[0]
 	}
 	mainConfig := core.GetMainConfig()
-	nodeLabel := map[string]string{mainConfig.K8SConfig.NodeLabelKey: mainConfig.K8SConfig.NodeLabelValue}
+	//nodeLabel := map[string]string{mainConfig.K8SConfig.NodeLabelKey: mainConfig.K8SConfig.NodeLabelValue}
 
 	if !mainConfig.K8SConfig.DeleteJob {
 		k8sJob = &batchv1.Job{
@@ -68,8 +68,8 @@ func ConstructK8SJob(job *model.TaskDTO, temporalWfID, temporalRunID string) (k8
 						},
 					},
 					Spec: apiv1.PodSpec{
-						Volumes:      volumes,
-						NodeSelector: nodeLabel,
+						Volumes: volumes,
+						//NodeSelector: nodeLabel,
 						Containers: []apiv1.Container{
 							{
 								Name:            job.TaskID,
@@ -107,8 +107,8 @@ func ConstructK8SJob(job *model.TaskDTO, temporalWfID, temporalRunID string) (k8
 						},
 					},
 					Spec: apiv1.PodSpec{
-						Volumes:      volumes,
-						NodeSelector: nodeLabel,
+						Volumes: volumes,
+						//NodeSelector: nodeLabel,
 						Containers: []apiv1.Container{
 							{
 								Name:            job.TaskID,

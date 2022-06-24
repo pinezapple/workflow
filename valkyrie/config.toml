@@ -1,8 +1,4 @@
 PORT=10006
-JWL_URL="https://genome.vinbigdata.org/user/.well-known/jwks"
-ISSUERS=["https://genome.vinbigdata.org/user"]
-AUDIENCES=["openid","user"]
-PURPOSE="access"
 
 HARD_DISK_ONLY=true
 NO_DELETE=true
@@ -11,15 +7,15 @@ SERVICE_NAME="valkyrie"
 ENVIRONMENT="DEVELOPMENT"
 LOG_LEVEL="DEBUG"
 
-DB_NAME="testdb"
-DB_USERNAME="testuser"
-DB_PASSWORD="testpassword"
+DB_NAME="valkyrie"
+DB_USERNAME="lucas"
+DB_PASSWORD="123"
 DB_HOSTNAME="localhost"
 DB_PORT="5432"
 
-INPUT="/home/ubuntu/input"
-OUTPUT="/home/ubuntu/output"
-TEMP_UPLOAD="/home/ubuntu/temp"
+INPUT="/home/pine/bio-input"
+OUTPUT="/home/pine/bio-output"
+TEMP_UPLOAD="/home/pine/temp"
 
 ACCESS_KEY="minioadmin"
 SECRET_KEY="minioadmin"

@@ -120,15 +120,11 @@ type ExpectJWTConf struct {
 
 // HTTPServerConf binding configuration for webserver
 type HTTPServerConf struct {
-	PublicIP        string
-	Port            int
-	Cert            string
-	Key             string
-	ClientCAs       string // csv list of trusted CAs
-	JwkURL          string
-	ENV             string
-	LogLevel        string
-	ExpectJWTConfig *ExpectJWTConf
+	PublicIP  string
+	Port      int
+	Cert      string
+	Key       string
+	ClientCAs string // csv list of trusted CAs
 }
 
 type MinioConf struct {
