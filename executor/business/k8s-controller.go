@@ -118,10 +118,11 @@ func (c *Controller) ExecuteFailTaskWorkflow(taskID string) {
 		TaskID: taskID,
 	}
 	wo := client.StartWorkflowOptions{
-		TaskQueue: "task-queue-name",
+		ID:        taskID + "-" + model.FailTaskWfName,
+		TaskQueue: model.BifrostQueueName,
 	}
 
-	res, err := e.tempCli.ExecuteWorkflow(context.Background(), wo, model.FailTasktWfName, param)
+	res, err := e.tempCli.ExecuteWorkflow(context.Background(), wo, model.FailTaskWfName, param)
 	if err != nil {
 		c.logger.Error(err.Error())
 	}
@@ -136,10 +137,11 @@ func (c *Controller) ExecuteDoneTaskWorkflow(taskID string, files []string, size
 		Filesize: size,
 	}
 	wo := client.StartWorkflowOptions{
-		TaskQueue: "task-queue-name",
+		ID:        taskID + "-" + model.DoneTaskWfName,
+		TaskQueue: model.BifrostQueueName,
 	}
 
-	res, err := e.tempCli.ExecuteWorkflow(context.Background(), wo, model.DoneTasktWfName, param)
+	res, err := e.tempCli.ExecuteWorkflow(context.Background(), wo, model.DoneTaskWfName, param)
 	if err != nil {
 		c.logger.Error(err.Error())
 	}

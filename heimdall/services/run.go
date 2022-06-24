@@ -144,13 +144,10 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 			ID:        childTask[i].TaskID + "-" + model.ExecuteTaskWfName,
 			TaskQueue: model.BifrostQueueName,
 		}
-		res, err := heimdallTemp.tempCli.ExecuteWorkflow(ctx, wo, model.ExecuteTaskWfName, ExecuteTaskParam{Task: childTask[i]})
+		_, err := heimdallTemp.tempCli.ExecuteWorkflow(ctx, wo, model.ExecuteTaskWfName, ExecuteTaskParam{Task: childTask[i]})
 		if err != nil {
 			logger.Errorf("create execute workflow error: %s", err.Error())
 			return runDto, err
-		}
-		if err := res.Get(ctx, nil); err != nil {
-			logger.Errorf("create execute workflow error: %s", err.Error())
 		}
 	}
 
@@ -218,9 +215,10 @@ func updateRunEntity(ctx *gin.Context, runEntity *entity.RunEntity, tfRes dto.Tr
 			RunIndex: runEntity.RunIndex,
 
 			// Description
-			IsBoundary: task.IsBoundary,
-			UserName:   "tungnt99",
-			Command:    cmds,
+			IsBoundary:  task.IsBoundary,
+			UserName:    "tungnt99",
+			RealCommand: task.Command,
+			Command:     cmds,
 			// Inputs
 			// Outputs
 			// Resource:  "",

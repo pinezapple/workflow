@@ -86,6 +86,7 @@ func Boot() {
 		if mainConfig.NoDelete {
 			booting.BootstrapDaemons(context.Background(),
 				webserver.WebServer,
+				business.RunTemporalDaemon,
 			)
 
 		} else {

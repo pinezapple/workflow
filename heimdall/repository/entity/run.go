@@ -56,6 +56,7 @@ type TaskEntity struct {
 	ChildrenTasksID pq.StringArray `gorm:"type:text[]"`
 
 	Command     pq.StringArray `gorm:"type:text[]"`
+	RealCommand string
 	DockerImage pq.StringArray `gorm:"type:text[]"`
 	Inputs      []byte         `gorm:"type:jsonb"`
 	Outputs     []byte         `gorm:"type:jsonb"`

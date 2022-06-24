@@ -4,8 +4,8 @@ import "time"
 
 const (
 	//Workflow names
-	DoneTasktWfName   = "DoneTaskWf"
-	FailTasktWfName   = "FailTasktWf"
+	DoneTaskWfName    = "DoneTaskWf"
+	FailTaskWfName    = "FailTaskWf"
 	ExecuteTaskWfName = "ExecuteTaskWf"
 
 	//Activity names

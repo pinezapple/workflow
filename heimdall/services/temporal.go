@@ -105,6 +105,7 @@ func (e *HeimdallTemporal) RegisterWorker() (err error) {
 	e.worker.RegisterActivityWithOptions(e.UpdateTaskStatusAct, activity.RegisterOptions{Name: model.UpdateTaskStatusActName})
 	e.worker.RegisterActivityWithOptions(e.UpdateTaskSuccessAct, activity.RegisterOptions{Name: model.UpdateTaskSuccessActName})
 	e.worker.RegisterActivityWithOptions(e.UpdateTaskFailAct, activity.RegisterOptions{Name: model.UpdateTaskFailActName})
+	e.worker.RegisterActivityWithOptions(e.UpdateTaskStartTimeAct, activity.RegisterOptions{Name: model.UpdateTaskStartTimeActName})
 
 	// TODO: add LOGGGG
 	e.lg.Info("Starting Temporal workers")
@@ -328,24 +329,28 @@ func extractFilesToSave(task *entity.TaskEntity, files, filenames []string, file
 }
 
 func transformToTaskDTO(task entity.TaskEntity) (res model.TaskDTO, err error) {
-	var command string = ""
-	for i := 0; i < len(task.Command); i++ {
-		if i != len(task.Command)-1 {
-			command = command + task.Command[i] + " "
-		} else {
-			command = command + task.Command[i]
-		}
-	}
 	var param []*model.ParamWithRegex
 	err = json.Unmarshal(task.ParamsWithRegex, &param)
 	if err != nil {
 		return model.TaskDTO{}, err
 	}
 
+	for j := 0; j < len(param); j++ {
+		for k := 0; k < len(param[j].Regex); k++ {
+			if !utils.IsRegex(param[j].Regex[k]) {
+				newFile := &model.FilteredFiles{
+					Filepath: param[j].Regex[k],
+					Filesize: 0,
+				}
+				param[j].Files = append(param[j].Files, newFile)
+			}
+		}
+	}
+
 	return model.TaskDTO{
 		TaskID:          task.TaskID,
 		TaskUUID:        task.ID.String(),
-		Command:         command,
+		Command:         task.RealCommand,
 		ParamsWithRegex: param,
 		OutputRegex:     task.OutputRegex,
 		Output2ndFiles:  task.Output2ndFiles,

@@ -79,8 +79,8 @@ func (e *ExecutorTemporal) RegisterWorker() (err error) {
 	e.worker = worker.New(e.tempCli, model.BifrostQueueName, workerOptions)
 
 	// register workflow
-	e.worker.RegisterWorkflowWithOptions(e.DoneTasktWf, workflow.RegisterOptions{Name: model.DoneTasktWfName})
-	e.worker.RegisterWorkflowWithOptions(e.FailTasktWf, workflow.RegisterOptions{Name: model.FailTasktWfName})
+	e.worker.RegisterWorkflowWithOptions(e.DoneTaskWf, workflow.RegisterOptions{Name: model.DoneTaskWfName})
+	e.worker.RegisterWorkflowWithOptions(e.FailTaskWf, workflow.RegisterOptions{Name: model.FailTaskWfName})
 
 	// register activity
 	e.worker.RegisterActivityWithOptions(e.ExecuteTaskAct, activity.RegisterOptions{Name: model.ExecuteTaskActName})
@@ -94,12 +94,13 @@ func (e *ExecutorTemporal) RegisterWorker() (err error) {
 	return nil
 }
 
-func (e *ExecutorTemporal) DoneTasktWf(ctx workflow.Context, param model.UpdateTaskSuccessParam) (err error) {
-	// STEP 1: Update task success to heimdall
-	e.lg.Info("[DoneTaskWf] Start Done Task workflow")
+func (e *ExecutorTemporal) DoneTaskWf(ctx workflow.Context, param model.UpdateTaskSuccessParam) (err error) {
+	e.lg.Info("[DoneTaskWf] Start Done Task workflow for " + param.TaskID)
+	core.DecreaseJobCount()
 
+	// STEP 1: Update task success to heimdall
 	var res = model.UpdateTaskSuccessResult{}
-	e.lg.Info("[DoneTaskWf] Execute update task success activity")
+	e.lg.Info("[DoneTaskWf] Execute update task success activity for " + param.TaskID)
 
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
@@ -121,18 +122,20 @@ func (e *ExecutorTemporal) DoneTasktWf(ctx workflow.Context, param model.UpdateT
 	}
 
 	// STEP 2: Push files that needed to be saved to valkyrire
-	e.lg.Info("[DoneTaskWf] Execute save generated file activity")
+	e.lg.Info("[DoneTaskWf] Execute save generated file activity for " + param.TaskID)
 	future = workflow.ExecuteActivity(ctx, model.SaveGeneratedFileActName, res)
 	if err = future.Get(ctx, nil); err != nil {
 		e.lg.Error(err.Error())
 		return
 	}
 
-	e.lg.Info("[DoneTaskWf] End Done Task workflow")
+	e.lg.Info("[DoneTaskWf] End Done Task workflow for " + param.TaskID)
 	return nil
 }
 
-func (e *ExecutorTemporal) FailTasktWf(ctx workflow.Context, param model.UpdateTaskSuccessParam) (err error) {
+func (e *ExecutorTemporal) FailTaskWf(ctx workflow.Context, param model.UpdateTaskSuccessParam) (err error) {
+	e.lg.Info("[FailTasktWf] Start Fail Task workflow for " + param.TaskID)
+	core.DecreaseJobCount()
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
 		BackoffCoefficient: 2.0,
@@ -146,12 +149,14 @@ func (e *ExecutorTemporal) FailTasktWf(ctx workflow.Context, param model.UpdateT
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
 
+	e.lg.Info("[FailTasktWf] Start update task failed activity for " + param.TaskID)
 	future := workflow.ExecuteActivity(ctx, model.UpdateTaskFailActName, param)
 	if err = future.Get(ctx, nil); err != nil {
 		e.lg.Error(err.Error())
 		return
 	}
 
+	e.lg.Info("[FailTasktWf] End Fail Task workflow for " + param.TaskID)
 	return err
 }
 
