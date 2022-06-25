@@ -64,8 +64,8 @@ type TaskEntity struct {
 	Executors   []byte         `gorm:"type:jsonb"`
 	Logs        []byte         `gorm:"type:jsonb"`
 
-	State            string
-	ParentsDoneCount int `json:"parent_done_count" gorm:"column:parent_done_count"`
+	State           string
+	ParentDoneCount int `json:"parent_done_count" gorm:"column:parent_done_count"`
 
 	StartedTime time.Time // start time in executor
 	EndTime     time.Time // end time in executor

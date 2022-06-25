@@ -28,7 +28,6 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 		// Update task
 		var (
 			updateTask = &entity.TaskEntity{
-				TaskID:         taskID,
 				OutputLocation: outputFileName,
 				OutputFilesize: outputFileSize,
 				State:          core.StateComplete,
@@ -39,10 +38,11 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 		}
 
 		var childrenTasks []entity.TaskEntity
-		err = tx.Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND parent_done_count <> 0", task.TaskID).Scan(&childrenTasks).Error
+		err = tx.Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND parent_done_count <> 1", task.TaskID).Scan(&childrenTasks).Error
+
 		for i := 0; i < len(childrenTasks); i++ {
 			// This is the final task of the run
-			if childrenTasks[i].IsBoundary && childrenTasks[i].ParentsDoneCount == 1 {
+			if childrenTasks[i].IsBoundary && childrenTasks[i].ParentDoneCount == 2 {
 				// Update Done Run
 				var values entity.RunEntity
 				values = entity.RunEntity{State: core.StateComplete, EndTime: sql.NullTime{Time: time.Now(), Valid: true}}
@@ -53,6 +53,7 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 
 			// filling child param with regexes
 			var childParam []*model.ParamWithRegex
+
 			err := json.Unmarshal(childrenTasks[i].ParamsWithRegex, &childParam)
 			if err != nil {
 				return err
@@ -62,19 +63,18 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 			if err != nil {
 				return err
 			}
+			parentDoneCount := childrenTasks[i].ParentDoneCount - 1
 
-			var (
-				updateTask = &entity.TaskEntity{
-					ID:               childrenTasks[i].ID,
-					ParamsWithRegex:  childParamByte,
-					ParentsDoneCount: childrenTasks[i].ParentsDoneCount - 1,
-				}
-			)
+			updateTask = &entity.TaskEntity{
+				ParamsWithRegex: childParamByte,
+				ParentDoneCount: parentDoneCount,
+			}
 
 			// update to db
-			if err = tx.Model(&entity.TaskEntity{}).Where("id= ?", childrenTasks[i].ID).Take(&entity.TaskEntity{}).Updates(updateTask).Error; err != nil {
+			if err = tx.Where("id = ?", childrenTasks[i].ID).Take(&entity.TaskEntity{}).Updates(updateTask).Error; err != nil {
 				return err
 			}
+
 		}
 
 		// return nil will commit the whole transaction
@@ -110,12 +110,12 @@ func (tG *TaskGorm) GetTaskByTaskID(ctx context.Context, id string) (task entity
 }
 
 func (tG *TaskGorm) GetReadyChildrenTaskByTaskID(ctx context.Context, taskID string) (task []entity.TaskEntity, err error) {
-	err = gDB.WithContext(ctx).Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND parent_done_count = 0 AND state LIKE ?", taskID, core.StateUnknown).Scan(&task).Error
+	err = gDB.WithContext(ctx).Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND parent_done_count = 1 AND state = ?", taskID, core.StateUnknown).Scan(&task).Error
 	return
 }
 
 func (tG *TaskGorm) GetChildrenTaskByTaskID(ctx context.Context, taskID string) (task []entity.TaskEntity, err error) {
-	err = gDB.WithContext(ctx).Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND state LIKE ?", taskID, core.StateUnknown).Scan(&task).Error
+	err = gDB.WithContext(ctx).Raw("SELECT * FROM task_entities WHERE task_id = ANY((SELECT children_tasks_id FROM task_entities WHERE task_id = ?)::text[]) AND state = ?", taskID, core.StateUnknown).Scan(&task).Error
 	return
 }
 
@@ -135,7 +135,9 @@ func (tG *TaskGorm) UpdateTaskState(ctx context.Context, taskID string, state st
 		)
 
 		if state == core.StateQueued {
-			updateTask.ParentsDoneCount = 0
+			if err := tx.Exec("UPDATE task_entities SET parent_done_count = ? WHERE id = ?", 1, task.ID).Error; err != nil {
+				return err
+			}
 		}
 
 		if err := tx.Where("task_id = ?", task.TaskID).Take(&entity.TaskEntity{}).Updates(updateTask).Error; err != nil {
@@ -147,7 +149,7 @@ func (tG *TaskGorm) UpdateTaskState(ctx context.Context, taskID string, state st
 
 func (tG *TaskGorm) UpdateStartTime(ctx context.Context, taskID string, starttime time.Time) (err error) {
 	task := new(entity.TaskEntity)
-	values := entity.TaskEntity{StartedTime: starttime}
+	values := entity.TaskEntity{StartedTime: starttime, State: core.StateRunning}
 	if err := gDB.WithContext(ctx).Model(&entity.TaskEntity{}).Where("task_id = ? ", taskID).Take(task).Updates(values).Error; err != nil {
 		return err
 	}

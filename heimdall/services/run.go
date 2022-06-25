@@ -126,7 +126,7 @@ func (service runServiceImpl) CreateRun(ctx *gin.Context, runForm *forms.Workflo
 	// Get first task
 	var firstTask entity.TaskEntity
 	for i := 0; i < len(runEntity.Tasks); i++ {
-		if runEntity.Tasks[i].ParentsDoneCount == 0 && runEntity.Tasks[i].IsBoundary {
+		if runEntity.Tasks[i].ParentDoneCount == 1 && runEntity.Tasks[i].IsBoundary {
 			firstTask = runEntity.Tasks[i]
 			break
 		}
@@ -232,8 +232,8 @@ func updateRunEntity(ctx *gin.Context, runEntity *entity.RunEntity, tfRes dto.Tr
 			ChildrenTasksID: task.ChildrenTasksID,
 			OutputLocation:  task.OutputLocation,
 
-			ParentsDoneCount: len(task.ParentTasksID),
-			State:            core.StateUnknown,
+			ParentDoneCount: len(task.ParentTasksID) + 1,
+			State:           core.StateUnknown,
 			// StartedTime
 			// EndTime
 		}

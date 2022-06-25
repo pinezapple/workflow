@@ -192,6 +192,7 @@ func (e *ExecutorTemporal) ExecuteTaskAct(ctx context.Context, param model.Execu
 	// add log here
 	err = CreateK8SJob(ctx, &param.Task, e.lg, "", "")
 	if err != nil {
+		e.lg.Error(err.Error())
 		core.DecreaseJobCount()
 		return model.ExecuteTaskResult{
 			TimeStamp: time.Now(),

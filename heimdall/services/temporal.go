@@ -190,7 +190,7 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 			u.lg.Error(err.Error())
 			return
 		}
-		u.lg.Info("update task " + param.Task.TaskID + " status to success")
+		u.lg.Info("update task " + param.Task.TaskID + " status to running")
 	}
 
 	return nil
@@ -211,11 +211,16 @@ func (u *HeimdallTemporal) UpdateTaskSuccessAct(ctx context.Context, param model
 	var outputFileName, filePathToSave, fileNameToSave []string
 	var outputFileSize, fileSizeToSave []int64
 
+	doneTask, err := taskDAO.GetTaskByTaskID(ctx, param.TaskID)
+	if err != nil {
+		return model.UpdateTaskSuccessResult{}, err
+	}
+
 	// STEP 1: Update output location + status + children task to db
 	u.lg.Info("get output file of task " + param.TaskID)
 	filenames := utils.GetFileName(param.Filename)
 	if len(param.Filename) != 0 {
-		_, outputFileName, filePathToSave, fileNameToSave, fileSizeToSave, outputFileSize = extractFilesToSave(&entity.TaskEntity{}, param.Filename, filenames, param.Filesize)
+		_, outputFileName, filePathToSave, fileNameToSave, fileSizeToSave, outputFileSize = extractFilesToSave(&doneTask, param.Filename, filenames, param.Filesize)
 	}
 
 	err = taskDAO.UpdateDoneTask(ctx, param.TaskID, outputFileName, outputFileSize, param.Filename, filenames, param.Filesize)
@@ -293,6 +298,7 @@ func extractFilesToSave(task *entity.TaskEntity, files, filenames []string, file
 	if len(files) == 0 {
 		return
 	}
+
 	fileMap := make(map[string]int64)
 	for i := 0; i < len(files); i++ {
 		for j := 0; j < len(task.OutputRegex); j++ {
