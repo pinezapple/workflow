@@ -8,19 +8,35 @@ const routes = [
     component: Home,
   },
   {
-    path: "/workflow",
-    name: "Workflows",
-    component: () =>
-      import(
-        /* webpackChunkName: "about" */ "../views/workflow/workflow-list.vue"
-      ),
-  },
-  {
     path: "/projects",
     name: "Projects",
     component: () =>
       import(
-        /* webpackChunkName: "about" */ "../views/projects/project-list.vue"
+        /* webpackChunkName: "project-list" */ "../views/projects/project-list.vue"
+      ),
+  },
+  {
+    path: "/projects/:projectId/data/:path*",
+    name: "Project Detail",
+    component: () =>
+      import(
+        /* webpackChunkName: "project-detail" */ "../views/project/project-detail.vue"
+      ),
+  },
+  {
+    path: "/projects/:projectId/workflows/:workflowId*",
+    name: "Workflow Edit",
+    component: () =>
+      import(
+        /* webpackChunkName: "workflow-edit" */ "../views/workflow/workflow-edit.vue"
+      ),
+  },
+  {
+    path: "/workflows",
+    name: "Workflows",
+    component: () =>
+      import(
+        /* webpackChunkName: "workflow-list" */ "../views/workflow/workflow-list.vue"
       ),
   },
   {
@@ -28,7 +44,40 @@ const routes = [
     name: "Analyses",
     component: () =>
       import(
-        /* webpackChunkName: "about" */ "../views/analyses/analytics-list.vue"
+        /* webpackChunkName: "analytic-list" */ "../views/runs/analytics-list.vue"
+      ),
+  },
+  {
+    path: "/analyses/:runId",
+    name: "Analyse Detail",
+    component: () =>
+      import(
+        /* webpackChunkName: "run-detail" */ "../views/runs/run-detail.vue"
+      ),
+  },
+  {
+    path: "/tasks/:taskId",
+    name: "Task Details",
+    component: () =>
+      import(
+        /* webpackChunkName: "task-detail" */ "../views/task/task-detail.vue"
+      ),
+  },
+  {
+    path: "/log/:id",
+    name: "Log Details",
+    component: () =>
+      import(
+        /* webpackChunkName: "log-details" */ "../views/logs/log-detail.vue"
+      ),
+  },
+
+  {
+    path: "/projects/add",
+    name: "Project Add",
+    component: () =>
+      import(
+        /* webpackChunkName: "project-edit" */ "../views/project/project-edit.vue"
       ),
   },
   {
@@ -36,7 +85,7 @@ const routes = [
     name: "Biosample",
     component: () =>
       import(
-        /* webpackChunkName: "about" */ "../views/biosample/biosample-list.vue"
+        /* webpackChunkName: "biosample-list" */ "../views/biosample/biosample-list.vue"
       ),
   },
   {
@@ -44,7 +93,7 @@ const routes = [
     name: "Demodata",
     component: () =>
       import(
-        /* webpackChunkName: "about" */ "../views/demodata/demodata-list.vue"
+        /* webpackChunkName: "demodata-list" */ "../views/demodata/demodata-list.vue"
       ),
   },
   {
@@ -55,9 +104,6 @@ const routes = [
   {
     path: "/about",
     name: "About",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/About.vue"),
   },

@@ -11,7 +11,7 @@ import (
 
 func CreateSample(ctx context.Context, req *model.CreateNewSampleReq) (err error) {
 	db := core.GetDBObj()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 	sampleDAO := dao.GetSampleDAO()
 
 	newSample := &model.Sample{

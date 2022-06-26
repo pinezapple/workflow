@@ -217,10 +217,11 @@ func (c *Controller) OnHandleK8SUpdateNoti(newEvent ControllerEvent) error {
 					c.logger.Error(err.Error())
 					return nil
 				}
-				core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, false)
 
 				// push signal to Temporal Workflow
 				c.ExecuteDoneTaskWorkflow(objMeta.OwnerReferences[i].Name, names, size)
+
+				core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, true)
 			}
 		}
 	} else if podPhase == "Failed" {
@@ -230,10 +231,10 @@ func (c *Controller) OnHandleK8SUpdateNoti(newEvent ControllerEvent) error {
 			if (objMeta.OwnerReferences[i].Kind == "Job") && !GetPod(objMeta.OwnerReferences[i].Name) {
 				SetPod(objMeta.OwnerReferences[i].Name)
 
-				_ = core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, false)
-
 				// push signal to Temporal Workflow
 				c.ExecuteFailTaskWorkflow(objMeta.OwnerReferences[i].Name)
+
+				core.DeleteK8SJob(context.Background(), objMeta.OwnerReferences[i].Name, true)
 			}
 		}
 	}

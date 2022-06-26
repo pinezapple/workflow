@@ -164,7 +164,8 @@ func (u *HeimdallTemporal) ExecuteTaskWf(ctx workflow.Context, param ExecuteTask
 	}
 	options = workflow.ActivityOptions{
 		TaskQueue:           model.BifrostExAct,
-		StartToCloseTimeout: 2 * time.Second,
+		StartToCloseTimeout: 10 * time.Hour,
+		HeartbeatTimeout:    time.Second * 2,
 		RetryPolicy:         retrypolicy,
 	}
 	ctx2 := workflow.WithActivityOptions(ctx, options)

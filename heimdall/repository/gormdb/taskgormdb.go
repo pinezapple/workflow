@@ -31,6 +31,7 @@ func (tG *TaskGorm) UpdateDoneTask(ctx context.Context, taskID string, outputFil
 				OutputLocation: outputFileName,
 				OutputFilesize: outputFileSize,
 				State:          core.StateComplete,
+				EndTime:        time.Now(),
 			}
 		)
 		if err := tx.Where("id = ?", task.ID).Take(&entity.TaskEntity{}).Updates(updateTask).Error; err != nil {
@@ -89,9 +90,26 @@ func (tG *TaskGorm) UpdateFailTask(ctx context.Context, taskID string) (err erro
 		if task.State == core.StateExecutorError || task.State == core.StateComplete {
 			return nil
 		}
-		if err = tx.WithContext(ctx).Model(&entity.TaskEntity{}).Where("run_id = ? ", task.RunID.String()).Take(&entity.TaskEntity{}).Update("state", core.StateExecutorError).Error; err != nil {
+		// Update task fail
+		var (
+			updateTask = &entity.TaskEntity{
+				State:   core.StateExecutorError,
+				EndTime: time.Now(),
+			}
+		)
+		if err := tx.Where("id = ?", task.ID).Take(&entity.TaskEntity{}).Updates(updateTask).Error; err != nil {
 			return err
 		}
+
+		if err := tx.Exec("UPDATE task_entities SET state = ?, started_time = ?, end_time = ?  WHERE run_id = ? AND state = ?", core.StateExecutorError, time.Now(), time.Now(), task.RunID.String(), core.StateUnknown).Error; err != nil {
+			return err
+		}
+
+		/*
+			if err = tx.WithContext(ctx).Model(&entity.TaskEntity{}).Where("run_id = ? ", task.RunID.String()).Take(&entity.TaskEntity{}).Update("state", core.StateExecutorError).Error; err != nil {
+				return err
+			}
+		*/
 
 		var values entity.RunEntity
 		values = entity.RunEntity{State: core.StateExecutorError, EndTime: sql.NullTime{Time: time.Now(), Valid: true}}

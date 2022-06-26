@@ -13,7 +13,7 @@ func UserUploadFileToMinio(c echo.Context) error {
 	logger.Info("user upload to server")
 	mainConf := core.GetMainConfig()
 	ctx := c.Request().Context()
-	userid := ctx.Value("UserID").(string)
+	userid := "tungnt99"
 	// handler header
 
 	// Get minio client

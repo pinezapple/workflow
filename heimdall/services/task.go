@@ -6,12 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"workflow/heimdall/core"
 	"workflow/heimdall/repository"
 	"workflow/heimdall/repository/entity"
 	"workflow/heimdall/webserver/forms"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // TaskService interface contains methods
@@ -140,27 +141,28 @@ func convertTaskEntity2Dto(ctx *gin.Context, taskEntity *entity.TaskEntity) (tas
 		}
 	}
 
-	if len(taskEntity.Outputs) > 0 {
-		if err = json.Unmarshal(taskEntity.Outputs, &outputs); err != nil {
-			return
-		}
-	} else {
-		// TODO(tuandn8) Temporary copy data from OutputLocation to Outputs
-		for _, file := range taskEntity.OutputLocation {
-			var output = forms.TaskOutputDto{
-				Name: file,
-				// Description :
-				URL: formDownloadURL(
-					core.GetConfig().Valkyrie.Host,
-					core.GetConfig().Valkyrie.Port,
-					file,
-					taskEntity.RunID.String(),
-					taskEntity.ID.String()),
-				// Path        :
-				Type: "FILE",
+	/*
+		if len(taskEntity.Ou) > 0 {
+			if err = json.Unmarshal(taskEntity.Outputs, &outputs); err != nil {
+				return
 			}
-			outputs = append(outputs, output)
+		} else {
+	*/
+	// TODO(tuandn8) Temporary copy data from OutputLocation to Outputs
+	for _, file := range taskEntity.OutputLocation {
+		var output = forms.TaskOutputDto{
+			Name: file,
+			// Description :
+			URL: formDownloadURL(
+				core.GetConfig().Valkyrie.Host,
+				core.GetConfig().Valkyrie.Port,
+				file,
+				taskEntity.RunID.String(),
+				taskEntity.ID.String()),
+			// Path        :
+			Type: "FILE",
 		}
+		outputs = append(outputs, output)
 	}
 
 	if taskEntity.Resource != nil {

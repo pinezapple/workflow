@@ -11,7 +11,7 @@ import (
 
 func CreateDataset(ctx context.Context, req *model.CreateNewDatasetReq) (data interface{}, err error) {
 	db := core.GetDBObj()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 	datasetDAO := dao.GetDatasetDAO()
 
 	newDataset := &model.Dataset{
@@ -32,7 +32,7 @@ func CreateDataset(ctx context.Context, req *model.CreateNewDatasetReq) (data in
 func GetDatasetWithFilter(ctx context.Context, pageSize, pageToken int, filter, orderParam string) (data []model.Dataset, err error) {
 	db := core.GetDBObj()
 	datasetDAO := dao.GetDatasetDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	dataset, err := datasetDAO.GetDatasetByOffset(ctx, db, userID, pageSize, pageToken, filter, orderParam)
 	if err != nil {

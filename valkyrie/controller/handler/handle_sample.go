@@ -49,7 +49,7 @@ func createSample(c echo.Context, request interface{}) (statusCode int, data int
 func GetSampleByDataset(c echo.Context) (erro error) {
 	logger.Info("Get samples by dataset with filter")
 	ctx := c.Request().Context()
-	//userID := ctx.Value("UserID").(string)
+	//userID := "tungnt99"
 	// datasetUUID := c.QueryParam("dataset_uuid")
 	datasetUUID := c.Param("dataset_uuid")
 
@@ -114,7 +114,7 @@ func GetSampleByDataset(c echo.Context) (erro error) {
 func GetSamplesByWorkflow(c echo.Context) (erro error) {
 	logger.Info("Get samples by workflow id with filter")
 	ctx := c.Request().Context()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 	// workflowUUID := c.QueryParam("workflow_uuid")
 	workflowUUID := c.Param("workflow_uuid")
 
@@ -183,7 +183,7 @@ func GetSamplesByWorkflow(c echo.Context) (erro error) {
 func GetSampleFilter(c echo.Context) (erro error) {
 	logger.Info("Get samples by workflow id with filter")
 	ctx := c.Request().Context()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	pageSizeString := c.QueryParam("page_size")
 	pageSize, er := strconv.Atoi(pageSizeString)
@@ -243,7 +243,7 @@ func GetSampleFilter(c echo.Context) (erro error) {
 func GetSampleDetail(c echo.Context) (erro error) {
 	logger.Info("Get samples by workflow id with filter")
 	ctx := c.Request().Context()
-	//userID := ctx.Value("UserID").(string)
+	//userID := "tungnt99"
 	// sampleUUID := c.QueryParam("sample_id")
 	sampleUUID := c.Param("sample_uuid")
 	resp, err := business.GetSampleDetail(ctx, sampleUUID)
@@ -278,7 +278,7 @@ func CheckExistSample(c echo.Context) error {
 	sampleName := c.Param("sample_name")
 	workflow := c.QueryParam("workflow")
 	ctx := c.Request().Context()
-	userid := ctx.Value("UserID").(string)
+	userid := "tungnt99"
 
 	ok, err := business.CheckExistSample(ctx, sampleName, workflow, userid)
 	if err != nil {

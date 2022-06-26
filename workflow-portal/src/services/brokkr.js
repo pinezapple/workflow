@@ -39,6 +39,11 @@ export default {
   },
 
   // **************************** TOOL *************************************
+  async getAllTools() {
+    const rs = await request.get("brokkr/tools");
+    return rs.data;
+  },
+  
   async getTools(currentPage, pageSize) {
     const rs = await request.get("brokkr/tools", {
       params: {

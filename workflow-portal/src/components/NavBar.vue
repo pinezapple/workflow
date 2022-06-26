@@ -6,7 +6,7 @@
           src="../assets/dna1.png"
           alt="logo genomics"
           class="navbar__logo"
-        />
+        >
       </el-col>
       <el-col :span="2">
         <h4 class="text_logo-white">
@@ -16,22 +16,24 @@
       <el-col :span="20" class="navbar__menu-box">
         <el-col :span="18" :offset="6">
           <ul class="el-menu el-menu--horizontal navbar__menu">
-            <router-link class="el-menu-item" to="home">Home</router-link>
-            <router-link class="el-menu-item" to="projects"
-              >Projects</router-link
-            >
-            <router-link class="el-menu-item" to="workflow"
-              >Workflow</router-link
-            >
-            <router-link class="el-menu-item" to="analyses"
-              >Analyses</router-link
-            >
-            <router-link class="el-menu-item" to="biosample"
-              >Biosample</router-link
-            >
-            <router-link class="el-menu-item" to="demodata"
-              >Demodata</router-link
-            >
+            <router-link class="el-menu-item" to="/">
+              Home
+            </router-link>
+            <router-link class="el-menu-item" to="/projects">
+              Projects
+            </router-link>
+            <router-link class="el-menu-item" to="/workflows">
+              Workflows
+            </router-link>
+            <router-link class="el-menu-item" to="/analyses">
+              Analyses
+            </router-link>
+            <!-- <router-link class="el-menu-item" to="/biosample">
+              Biosample
+            </router-link>
+            <router-link class="el-menu-item" to="/demodata">
+              Demodata
+            </router-link> -->
           </ul>
         </el-col>
       </el-col>
@@ -111,5 +113,24 @@ export default {
 }
 .el-menu.el-menu--horizontal {
   border: none;
+}
+.el-menu--horizontal .el-menu-item:not(.is-disabled):focus,
+.el-menu--horizontal .el-menu-item:not(.is-disabled):hover {
+}
+.el-menu--horizontal > .el-menu-item:not(.is-disabled):focus,
+.el-menu--horizontal > .el-menu-item:not(.is-disabled):hover,
+.el-menu--horizontal > .el-submenu .el-submenu__title:hover {
+  background-color: var(--violet-dark-color);
+  color: var(--orange-color);
+  border-bottom: 2px solid var(--orange-color);
+}
+.el-col-offset-6 {
+  height: 100%;
+}
+.navbar__menu {
+  height: 100%;
+}
+.el-menu-item {
+  height: 100% !important;
 }
 </style>

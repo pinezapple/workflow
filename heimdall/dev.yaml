@@ -13,5 +13,5 @@ server:
     environment: "production"
 
 valkyrie:
-    host:  "127.0.0.1" # Should be able to access from the client side
-    port:  ""
+    host:  "http://127.0.0.1" # Should be able to access from the client side
+    port:  "10006"

@@ -67,7 +67,7 @@ func GetUserFilesWithFilters(c echo.Context) (erro error) {
 	ctx := c.Request().Context()
 	db := core.GetDBObj()
 	fileDAO := dao.GetFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	pageSizeString := c.QueryParam("page_size")
 	pageSize, er := strconv.Atoi(pageSizeString)

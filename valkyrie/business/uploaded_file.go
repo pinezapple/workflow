@@ -146,7 +146,7 @@ func combineMultipeChunks(chunksDir string, userid string, fileName string) (fil
 func GetUserFiles(ctx context.Context, filter, orderParam string) (data []model.DataFile, err error) {
 	db := core.GetDBObj()
 	fileDAO := dao.GetUploadedFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	rawdata, err := fileDAO.GetUserFiles(ctx, db, userID, filter, orderParam)
 	if err != nil {
@@ -160,7 +160,7 @@ func GetUserFiles(ctx context.Context, filter, orderParam string) (data []model.
 func GetUserUploadedFile(ctx context.Context, pageSize, pageToken int, filter, orderParam string) (data []model.UploadedFile, total int64, err error) {
 	db := core.GetDBObj()
 	fileDAO := dao.GetUploadedFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	rawdata, total, er := fileDAO.GetUserUploadFiles(ctx, db, userID, pageSize, pageToken, filter, orderParam)
 	if er != nil {
@@ -173,7 +173,7 @@ func GetUserUploadedFile(ctx context.Context, pageSize, pageToken int, filter, o
 func HandleUpdateFileProjectPath(ctx context.Context, pathFiles *model.UpdatePathFiles) (err error) {
 	db := core.GetDBObj()
 	fileDAO := dao.GetUploadedFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	err = fileDAO.UpdateFileProjectPath(ctx, db, pathFiles, userID)
 	if err != nil {

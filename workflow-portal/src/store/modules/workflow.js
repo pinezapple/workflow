@@ -1,62 +1,51 @@
-import request from "../../services/heimdall";
+import heimdall from "../../services/heimdall";
 
 const state = {
-  workflowList: {
-    tableData: [],
-    multipleSelection: [],
-  },
-  total: null,
-  page: 1,
-  page_size: 20,
-  indexSelect: null,
-  itemsSelected: null,
+  workflows: [],
+  selectedWorkflow: null,
+  total: 0,
+  currentPage: 1,
+  pageSize: 10,
   isFetch: false,
   error: null,
 };
 
 const getters = {
-  stateWorkflowList: (state) => state.workflowList,
-  stateIndexSelected: (state) => state.indexSelect,
-  stateItemsSelected: (state) => state.itemsSelected,
-  stateIsFetch: (state) => !!state.isFetch,
-  stateIsError: (state) => state.error,
-  getPage: (state) => state.page,
-  getPageSize: (state) => state.page_size,
-  getTotal: (state) => state.total,
 };
 
 const actions = {
-  async ChangePageSize({ commit, dispatch }, page_size) {
-    await commit("setPageSize", page_size);
-    await dispatch("GetWorkflowList");
+  async ChangePageSize({ commit, dispatch }, pageSize) {
+    await commit("setPageSize", pageSize);
+    await dispatch("GetWorkflows");
   },
 
-  async ChangePage({ commit, dispatch }, page) {
-    await commit("setPage", page);
-    await dispatch("GetWorkflowList");
+  async ChangePage({ commit, dispatch }, currentPage) {
+    await commit("setCurrentPage", currentPage);
+    await dispatch("GetWorkflows");
   },
 
-  async GetWorkflowList({ commit, state }) {
-    let response = await request.getWorkflows(state.page, state.page_size);
-    await commit("setWorkflowList", response);
+  async GetWorkflows({ commit, state }) {
+    let response = await heimdall.getWorkflows(state.currentPage, state.pageSize);
+    await commit("setWorkflows", response);
   },
 
-  async GetItemsSelected({ commit }, itemsId) {
-    await commit("getSeletedWorkflow", itemsId);
-    await commit("getItemsWorkflow", itemsId);
+  async SetSelectedWorkflow({ commit }, id) {
+    await commit("setSelectedWorkflow", id);
   },
-};
+
+}
 
 const mutations = {
-  setPage(state, page) {
-    state.page = page;
-  },
-  setPageSize(state, page_size) {
-    state.page_size = page_size;
+  setCurrentPage(state, currentPage) {
+    state.currentPage = currentPage;
   },
 
-  setWorkflowList(state, data) {
-    state.workflowList.tableData = data.workflows;
+  setPageSize(state, pageSize) {
+    state.pageSize = pageSize;
+  },
+
+  setWorkflows(state, data) {
+    state.workflows = data.workflows;
     state.total = data.total;
   },
 
@@ -64,12 +53,11 @@ const mutations = {
     state.indexSelect = itemsId;
   },
 
-  getItemsWorkflow(state, itemsId) {
-    state.itemsSelected = state.workflowList.tableData.find(
-      (wf) => wf.uuid === itemsId
-    );
+  setSelectedWorkflow(state, workflowId) {
+    state.selectedWorkflow = state.workflows.find(item => item.id === workflowId);
   },
-};
+
+}
 
 export default {
   state,

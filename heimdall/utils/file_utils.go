@@ -37,8 +37,6 @@ func IsRegex(a string) (ok bool) {
 
 func FillInput(regexes []*model.ParamWithRegex, fileName []string, filePath []string, filesize []int64) {
 	for i := 0; i < len(regexes); i++ {
-		fmt.Println(regexes[i].Regex)
-		fmt.Println(regexes[i].SecondaryFiles)
 		for j := 0; j < len(regexes[i].Regex); j++ {
 			for k := 0; k < len(filePath); k++ {
 				ok, _ := filepath.Match(regexes[i].Regex[j], fileName[k])
@@ -60,10 +58,6 @@ func FillInput(regexes []*model.ParamWithRegex, fileName []string, filePath []st
 					}
 				}
 			}
-		}
-		for i1 := 0; i1 < len(regexes[i].Files); i1++ {
-			fmt.Println(regexes[i].Files[i1].Filepath)
-			fmt.Println(regexes[i].Files[i1].Filesize)
 		}
 	}
 }

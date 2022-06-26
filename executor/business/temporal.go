@@ -111,13 +111,13 @@ func (e *ExecutorTemporal) DoneTaskWf(ctx workflow.Context, param model.UpdateTa
 	e.lg.Info("[DoneTaskWf] Execute update task success activity for " + param.TaskID)
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
-		BackoffCoefficient: 2.0,
+		BackoffCoefficient: 1.0,
 		MaximumInterval:    time.Minute,
 		MaximumAttempts:    500,
 	}
 	options := workflow.ActivityOptions{
 		TaskQueue:           model.BifrostHeimAct,
-		StartToCloseTimeout: 2 * time.Second,
+		StartToCloseTimeout: 10 * time.Second,
 		RetryPolicy:         retrypolicy,
 	}
 	ctx1 := workflow.WithActivityOptions(ctx, options)
@@ -131,13 +131,13 @@ func (e *ExecutorTemporal) DoneTaskWf(ctx workflow.Context, param model.UpdateTa
 	// STEP 2: Push files that needed to be saved to valkyrire
 	retrypolicy = &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
-		BackoffCoefficient: 2.0,
+		BackoffCoefficient: 1.0,
 		MaximumInterval:    time.Minute,
 		MaximumAttempts:    500,
 	}
 	options = workflow.ActivityOptions{
 		TaskQueue:           model.BifrostValAct,
-		StartToCloseTimeout: 2 * time.Second,
+		StartToCloseTimeout: 10 * time.Second,
 		RetryPolicy:         retrypolicy,
 	}
 	ctx2 := workflow.WithActivityOptions(ctx, options)
@@ -157,13 +157,13 @@ func (e *ExecutorTemporal) FailTaskWf(ctx workflow.Context, param model.UpdateTa
 	core.DecreaseJobCount()
 	retrypolicy := &temporal.RetryPolicy{
 		InitialInterval:    time.Second,
-		BackoffCoefficient: 2.0,
+		BackoffCoefficient: 1.0,
 		MaximumInterval:    time.Minute,
 		MaximumAttempts:    500,
 	}
 	options := workflow.ActivityOptions{
 		TaskQueue:           model.BifrostHeimAct,
-		StartToCloseTimeout: 2 * time.Second,
+		StartToCloseTimeout: 10 * time.Second,
 		RetryPolicy:         retrypolicy,
 	}
 	ctx = workflow.WithActivityOptions(ctx, options)
@@ -184,11 +184,14 @@ func (e *ExecutorTemporal) ExecuteTaskAct(ctx context.Context, param model.Execu
 	// check for tasks threshold
 	mainConf := core.GetMainConfig()
 	for {
+		time.Sleep(time.Second)
 		if core.IsGoodToGo(mainConf.MaximumConcurrentJob) {
 			break
 		}
+		activity.RecordHeartbeat(ctx)
 	}
 
+	activity.RecordHeartbeat(ctx)
 	// add log here
 	err = CreateK8SJob(ctx, &param.Task, e.lg, "", "")
 	if err != nil {
@@ -199,6 +202,8 @@ func (e *ExecutorTemporal) ExecuteTaskAct(ctx context.Context, param model.Execu
 			Created:   false,
 		}, nil
 	}
+
+	activity.RecordHeartbeat(ctx)
 	res = model.ExecuteTaskResult{
 		TimeStamp: time.Now(),
 		Created:   true,

@@ -345,7 +345,7 @@ func ReuploadFileToMinio(ctx context.Context, req *model.ReuploadToMinioReq, use
 func GetGeneratedFile(ctx context.Context, pageSize, pageToken int, filter, orderParam string) (data []model.GeneratedFile, total int64, err error) {
 	db := core.GetDBObj()
 	fileDAO := dao.GetGeneratedFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	rawdata, total, er := fileDAO.GetUserGeneratedFiles(ctx, db, userID, pageSize, pageToken, filter, orderParam)
 	if er != nil {

@@ -28,7 +28,7 @@ func DownloadFileFromHardDisk(c echo.Context) (erro error) {
 	ctx := c.Request().Context()
 	db := core.GetDBObj()
 	gfDAO := dao.GetGeneratedFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	runuuid := c.QueryParam("run_uuid")
 	taskuuid := c.QueryParam("task_uuid")
@@ -61,7 +61,7 @@ func getPresignedDownloadURL(c echo.Context, request interface{}) (statusCode in
 	logger.Info("get presigned download url")
 	req := request.(*model.CreatePresignedURLReq)
 	ctx := c.Request().Context()
-	userid := ctx.Value("UserID").(string)
+	userid := "tungnt99"
 
 	// Get minio client
 	s3Client := core.GetMinIOClient()
@@ -104,7 +104,7 @@ func DeleteFileFromHardDisk(c echo.Context) (erro error) {
 	ctx := c.Request().Context()
 	db := core.GetDBObj()
 	fileDAO := dao.GetFileDAO()
-	userID := ctx.Value("UserID").(string)
+	userID := "tungnt99"
 
 	fileId := c.Param("file_id")
 	logger.Infof("Delete file: %s", fileId)
