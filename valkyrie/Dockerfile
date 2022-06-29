@@ -10,7 +10,6 @@ ENV GO111MODULE=on \
 # Build directory
 WORKDIR /build
 RUN apk add git
-RUN git config --global url."https://thanhpp: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@github.com".insteadOf "https://github.com"
 
 COPY go.mod go.sum ./
 RUN go mod download

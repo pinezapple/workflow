@@ -20,8 +20,6 @@ RUN apk --update add git less openssh graphviz build-base && \
 #     git config --global user.email <useremail>&& \
 #     git config --global url."https://<username>:<accesstoken>@github.com".insteadOf "https://github.com"
 
-RUN git config --global url."https://thanhpp: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@github.com".insteadOf "https://github.com"
-
 COPY ["./app/go.mod", "./app/go.sum","./"]
 
 RUN go mod tidy && go mod download
