@@ -1,18 +1,18 @@
 ```mermaid
 sequenceDiagram
-	Executor ->> Scheduler: 1) Update Task Completion Status  
-    Scheduler ->> Scheduler: 2) Extract Output
-    alt Status == success
-        Scheduler ->> Scheduler: 3) Add next task to queue 
+	Executor ->> Scheduler: 1) Cập nhật trạng thái của task  
+    Scheduler ->> Scheduler: 2) Lấy ra tệp đầu ra của task
+    alt Trạng thái == thành công 
+        Scheduler ->> Kafka: 3) Thêm các task sau vào hàng đợi
     end
-	Scheduler ->> Heimdall: 4) Update Task Metadata 
-    Heimdall -->> Scheduler: 5) Result
-    alt Result == fail 
-        Scheduler ->> RetryQueue: 6) Add request to batch retry
+	Scheduler ->> Heimdall: 4) Cập nhật trạng thái của task
+    Heimdall -->> Scheduler: 5) Kêt quả
+    alt Kết quả == thất bại 
+        Scheduler ->> RetryQueue: 6) Đẩy yêu cầu vào hàng đợi
     end
-    Scheduler ->> Valkyrie: 7) Update Output Files Metadata
-    Valkyrie -->> Scheduler: 8) Result
-    alt Result == fail 
-        Scheduler ->> RetryQueue: 9) Add request to batch retry
+    Scheduler ->> Valkyrie: 7) Cập nhật tệp đầu ra của task
+    Valkyrie -->> Scheduler: 8) Kết quả
+    alt Kết quả == thất bại 
+        Scheduler ->> RetryQueue: 9) Đẩy yêu cầu vào hàng đợi
     end
 ```
