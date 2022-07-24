@@ -3,7 +3,7 @@ database:
     port: "5432"
     user: "lucas"
     password: "123"
-    dbname: "workflowdb"
+    dbname: "heimdall"
 
 server:
     host: "127.0.0.1"
